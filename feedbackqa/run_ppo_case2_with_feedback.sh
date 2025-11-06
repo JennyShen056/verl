@@ -7,7 +7,7 @@
 set -x
 
 # Paths
-TRAINED_RM_PATH="./feedback_qa_reward_model/final_model"
+TRAINED_RM_PATH="/workspace/verl/feedbackqa/feedback_qa_reward_model"
 DATA_DIR="$HOME/data/feedback_qa_ppo/case2_with_feedback"
 POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 
@@ -24,12 +24,11 @@ if [ ! -f "$TRAIN_DATA" ]; then
     exit 1
 fi
 
-# Using pre-trained FsfairX reward model instead of custom trained one
-# if [ ! -d "$TRAINED_RM_PATH" ]; then
-#     echo "ERROR: Trained reward model not found at $TRAINED_RM_PATH"
-#     echo "Please run: python feedbackqa/rm_train.py"
-#     exit 1
-# fi
+if [ ! -d "$TRAINED_RM_PATH" ]; then
+    echo "ERROR: Trained reward model not found at $TRAINED_RM_PATH"
+    echo "Please train the reward model first: python feedbackqa/rm_train.py"
+    exit 1
+fi
 
 echo "========================================="
 echo "PPO Training - Case 2: With Feedback"

@@ -7,7 +7,7 @@
 set -x
 
 # Paths
-TRAINED_RM_PATH="$HOME/feedback_qa_reward_model/final_model"
+TRAINED_RM_PATH="/workspace/verl/feedbackqa/feedback_qa_reward_model"
 DATA_DIR="$HOME/data/feedback_qa_ppo/case1_question_only"
 POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 
