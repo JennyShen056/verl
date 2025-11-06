@@ -43,12 +43,18 @@ def set_seed(seed=42):
 class RewardModelTrainer(Trainer):
     """Custom Trainer with Binary Cross-Entropy loss for reward model training"""
     
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
         """
         Custom loss function using Binary Cross-Entropy for verl-compatible reward model.
         
         Model outputs: [batch_size, seq_len, 1] logits
         We take the last token (EOS) logit and apply BCE loss.
+        
+        Args:
+            model: The model being trained
+            inputs: Input batch
+            return_outputs: Whether to return outputs along with loss
+            num_items_in_batch: Number of items in batch (for newer transformers versions)
         """
         labels = inputs.pop("labels")
         
