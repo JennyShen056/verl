@@ -41,14 +41,14 @@ def set_seed(seed=42):
 
 
 class RewardModelTrainer(Trainer):
-    """Custom Trainer with Binary Cross-Entropy loss for reward model training"""
+    """Custom Trainer with MSE loss for reward model training"""
     
     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
         """
-        Custom loss function using Binary Cross-Entropy for verl-compatible reward model.
+        Custom loss function using Mean Squared Error for verl-compatible reward model.
         
         Model outputs: [batch_size, seq_len, 1] logits
-        We take the last token (EOS) logit and apply BCE loss.
+        We take the last token (EOS) logit and apply MSE loss.
         
         Args:
             model: The model being trained
@@ -66,9 +66,9 @@ class RewardModelTrainer(Trainer):
         # Shape: [batch_size, seq_len, 1] -> [batch_size, 1] -> [batch_size]
         eos_logits = logits[:, -1, 0]  # Last token, first (only) class
         
-        # Apply sigmoid and compute BCE loss
-        # BCE expects predictions and targets in [0, 1]
-        loss = F.binary_cross_entropy_with_logits(
+        # Compute MSE loss
+        # MSE between raw logits and binary labels (0 or 1)
+        loss = F.mse_loss(
             eos_logits, 
             labels.float(),
             reduction='mean'
@@ -355,7 +355,7 @@ class BinaryClassificationRewardModelTrainer:
         self.logger.info(
             f"Classification head dropout: {getattr(config, 'classifier_dropout', 'default')}"
         )
-        self.logger.info("Loss function: Binary Cross-Entropy (BCE) - optimal for binary labels")
+        self.logger.info("Loss function: Mean Squared Error (MSE) - regression-based approach")
 
     def tokenize_function(self, examples):
         """Tokenize text and convert binary labels to float scores for verl compatibility"""
@@ -548,7 +548,7 @@ class BinaryClassificationRewardModelTrainer:
                 "problem_type": "single_label_classification",
                 "max_length": self.max_length,
                 "output_type": "single_scalar_reward_per_token",
-                "loss_function": "binary_cross_entropy",
+                "loss_function": "mean_squared_error",
                 "verl_compatible": True,
             },
         }
