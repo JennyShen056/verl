@@ -48,13 +48,13 @@ TEST_FILE="feedbackqa/feedback_test_subset_100.json"
 # Step 1: Merge Case 1 checkpoint
 echo "Step 1/7: Merging Case 1 checkpoint..."
 echo "======================================="
-bash feedbackqa/merge_checkpoint.sh "$CASE1_NAME" "$GLOBAL_STEP"
+bash feedbackqa/merge_checkpoint.sh "$CASE1_NAME" "21"
 echo ""
 
 # Step 2: Merge Case 2 checkpoint
 echo "Step 2/7: Merging Case 2 checkpoint..."
 echo "======================================="
-bash feedbackqa/merge_checkpoint.sh "$CASE2_NAME" "$GLOBAL_STEP"
+bash feedbackqa/merge_checkpoint.sh "$CASE2_NAME" "41"
 echo ""
 
 # Paths to merged models
