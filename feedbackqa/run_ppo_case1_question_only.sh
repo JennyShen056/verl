@@ -25,11 +25,11 @@ if [ ! -f "$TRAIN_DATA" ]; then
     exit 1
 fi
 
-if [ ! -d "$TRAINED_RM_PATH" ]; then
-    echo "ERROR: Trained reward model not found at $TRAINED_RM_PATH"
-    echo "Please run: python feedbackqa/rm_train.py"
-    exit 1
-fi
+# if [ ! -d "$TRAINED_RM_PATH" ]; then
+#     echo "ERROR: Trained reward model not found at $TRAINED_RM_PATH"
+#     echo "Please run: python feedbackqa/rm_train.py"
+#     exit 1
+# fi
 
 echo "========================================="
 echo "PPO Training - Case 1: Question Only"
