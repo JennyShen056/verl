@@ -15,8 +15,6 @@ POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 TRAIN_DATA="$DATA_DIR/train.parquet"
 VALID_DATA="$DATA_DIR/valid.parquet"
 
-# huggingface-cli download sfairXC/FsfairX-LLaMA3-RM-v0.1 --local-dir $HOME/models/FsfairX-LLaMA3-RM-v0.1 &
-
 # Check if data exists
 if [ ! -f "$TRAIN_DATA" ]; then
     echo "ERROR: Training data not found at $TRAIN_DATA"
@@ -29,6 +27,8 @@ if [ ! -d "$TRAINED_RM_PATH" ]; then
     echo "Please train the reward model first: python feedbackqa/rm_train.py"
     exit 1
 fi
+
+echo "Using trained reward model: $TRAINED_RM_PATH"
 
 echo "========================================="
 echo "PPO Training - Case 2: With Feedback"
@@ -69,6 +69,7 @@ python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.optimizer_offload=False \
     reward_model.enable=True \
     reward_model.model.path="$TRAINED_RM_PATH" \
+    reward_model.model.input_tokenizer=null \
     reward_model.model.use_remove_padding=True \
     reward_model.model.fsdp_config.param_offload=True \
     reward_model.micro_batch_size_per_gpu=16 \
