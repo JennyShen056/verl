@@ -1,56 +1,3 @@
-#!/usr/bin/env python3
-"""
-Case 2: Previous Answer to Same Question + Feedback (Feedback-Augmented Learning)
-===================================================================================
-
-Preprocessing script for PPO training showing PREVIOUS ANSWER TO THE SAME QUESTION with feedback.
-Uses SINGLE-TURN format (like gsm8k.py) with everything embedded in one prompt.
-
-Input Format (feedback_train_ppo.json):
-    {
-        "question": "How do I get help finding a job?",
-        "section_content": "In this rapidly changing jobs market...",
-        "feedback": "A link to a job search website is included...",
-        "rating": "Excellent"
-    }
-
-Output Format (parquet for verl):
-    {
-        "data_source": "feedback_qa",
-        "prompt": [
-            {
-                "role": "user", 
-                "content": "Here is a previous answer to this question with feedback:\n\n
-                           Question: How do I get help finding a job?\n\n
-                           Previous Answer: [another answer to this same question]\n\n
-                           Feedback: ... (Rating: ...)\n\n
-                           Now, please answer the same question with similar or better quality:\n\n
-                           Question: How do I get help finding a job?"
-            }
-        ],
-        "ability": "qa_generation",
-        "reward_model": {"style": "model", ...},
-        "extra_info": {...}
-    }
-
-PPO Training Flow:
-    1. Model receives: Previous answer to THE SAME question + feedback, then asked to answer it
-    2. Model generates: Its own answer (learning from the previous answer example)
-    3. RM scores: Question + Generated Answer (NOT the previous answer!)
-    4. Policy learns to maximize RM score while seeing what worked before
-
-Key Innovation:
-    - Shows the model PREVIOUS ANSWERS to the EXACT SAME question with feedback
-    - Model learns what makes a good answer to THIS SPECIFIC question
-    - Single-turn format (like gsm8k.py) - easier for model to process
-    - If multiple answers exist for same question, randomly selects one as example
-    - If only one answer exists for a question, falls back to Case 1 (question only)
-    - RM still only scores the generated answer, not the previous answer
-
-This tests if seeing PREVIOUS ANSWERS to the same question with feedback helps models
-generate better answers than learning from scratch.
-"""
-
 import argparse
 import json
 import os
@@ -166,15 +113,24 @@ def make_map_fn(split: str, all_examples: List[Dict], data_source: str = "feedba
             }
         ]
         
+        # Question-only prompt for reward model (without previous answer/feedback context)
+        question_only_prompt = [
+            {
+                "role": "user",
+                "content": question
+            }
+        ]
+        
         data = {
             "data_source": data_source,
-            "prompt": prompt_messages,
+            "prompt": prompt_messages,  # Full context for policy training
             "ability": "qa_generation",
             "reward_model": {
                 "style": "model",  # Use trained neural network RM
                 "ground_truth": section_content,  # Store for reference
                 "feedback": feedback,
                 "rating": rating,
+                "prompt_for_rm": question_only_prompt,  # Question-only for RM evaluation
             },
             "extra_info": {
                 "split": split,

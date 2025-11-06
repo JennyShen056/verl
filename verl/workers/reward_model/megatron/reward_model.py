@@ -128,12 +128,115 @@ class MegatronRewardModel(BasePPORewardModel):
 
         return data, ori_values
 
+    def build_question_only_input(self, data: DataProto) -> DataProto:
+        """
+        Build reward model inputs using question-only prompt (without previous answer/feedback context).
+        This is useful when you want the policy to learn from feedback examples, but the reward model
+        should only evaluate based on the question + generated answer.
+        """
+        from verl.utils.model import compute_position_id_with_mask
+        
+        # Use the appropriate tokenizer
+        src_tokenizer = self.sft_tokenizer
+        target_tokenizer = self.rm_tokenizer if self.use_different_tokenizer else self.sft_tokenizer
+        
+        ori_input_ids = data.batch["input_ids"]
+        ori_attention_mask = data.batch["attention_mask"]
+        ori_position_ids = data.batch["position_ids"]
+        ori_values = {"input_ids": ori_input_ids, "attention_mask": ori_attention_mask, "position_ids": ori_position_ids}
+        
+        new_input_ids = []
+        new_attention_mask = []
+        new_position_ids = []
+        
+        for i in range(data.batch.batch_size[0]):
+            # Get the question-only prompt from reward_model metadata
+            if "reward_model" in data.non_tensor_batch and "prompt_for_rm" in data.non_tensor_batch["reward_model"][i]:
+                question_only_chat = list(data.non_tensor_batch["reward_model"][i]["prompt_for_rm"])
+            else:
+                # Fallback: use the regular raw_prompt if prompt_for_rm is not available
+                if "raw_prompt" in data.non_tensor_batch:
+                    question_only_chat = list(data.non_tensor_batch["raw_prompt"][i])
+                else:
+                    # Last resort: skip this modification
+                    raise ValueError("Neither 'prompt_for_rm' nor 'raw_prompt' found in data")
+            
+            # Extract response
+            response_ids = data.batch["responses"][i]
+            response_length = response_ids.shape[-1]
+            valid_response_length = data.batch["attention_mask"][i][-response_length:].sum()
+            valid_response_ids = response_ids[:valid_response_length]
+            
+            # Decode response
+            response = src_tokenizer.decode(valid_response_ids)
+            # Remove bos and eos
+            if src_tokenizer.eos_token:
+                response = response.replace(src_tokenizer.eos_token, "")
+            
+            # Build conversation: question-only + response
+            question_only_chat.append({"role": "assistant", "content": response})
+            
+            # Apply chat template
+            prompt_with_chat_template = target_tokenizer.apply_chat_template(
+                question_only_chat, add_generation_prompt=False, tokenize=False
+            )
+            
+            if torch.distributed.get_rank() == 0 and i == 0:
+                # For debugging purpose
+                print(f"[Megatron RM Question-Only Mode] chat: {prompt_with_chat_template}")
+            
+            # Tokenize
+            model_inputs = target_tokenizer(prompt_with_chat_template, return_tensors="pt", add_special_tokens=False)
+            input_ids = model_inputs["input_ids"][0].to(ori_input_ids.device)
+            attention_mask = torch.ones_like(input_ids)
+            
+            # Pad to match original length
+            max_length = ori_input_ids.shape[-1]
+            if input_ids.shape[-1] > max_length:
+                # Truncate if too long
+                input_ids = input_ids[:max_length]
+                attention_mask = attention_mask[:max_length]
+            else:
+                # Right pad if too short
+                pad_length = max_length - input_ids.shape[-1]
+                input_ids = torch.cat([input_ids, torch.full((pad_length,), target_tokenizer.pad_token_id, device=input_ids.device)])
+                attention_mask = torch.cat([attention_mask, torch.zeros(pad_length, device=attention_mask.device)])
+            
+            position_ids = torch.arange(0, max_length, device=input_ids.device)
+            
+            new_input_ids.append(input_ids.unsqueeze(0))
+            new_attention_mask.append(attention_mask.unsqueeze(0))
+            new_position_ids.append(position_ids.unsqueeze(0))
+        
+        new_input_ids = torch.cat(new_input_ids, dim=0)
+        new_attention_mask = torch.cat(new_attention_mask, dim=0)
+        new_position_ids = torch.cat(new_position_ids, dim=0)
+        
+        # Update data with question-only inputs
+        data.batch["input_ids"] = new_input_ids
+        data.batch["attention_mask"] = new_attention_mask
+        data.batch["position_ids"] = new_position_ids
+        
+        return data, ori_values
+
     @torch.no_grad()
     def compute_reward(self, data: DataProto) -> DataProto:
         if self.config.megatron.param_offload:
             self.load_params_to_cuda()
 
-        if self.use_different_tokenizer:
+        # Check if we should use question-only prompt for reward model
+        use_question_only = False
+        if "reward_model" in data.non_tensor_batch:
+            # Check first example to see if prompt_for_rm exists
+            first_rm_data = data.non_tensor_batch["reward_model"][0]
+            if isinstance(first_rm_data, dict) and "prompt_for_rm" in first_rm_data:
+                use_question_only = True
+        
+        ori_values = None
+        if use_question_only:
+            # Use question-only prompt (without previous answer/feedback context)
+            data, ori_values = self.build_question_only_input(data)
+        elif self.use_different_tokenizer:
             data, ori_values = self.re_encode_by_rm_tokenizer(data)
 
         input_ids = data.batch["input_ids"]  # (bs, seq_len')
@@ -184,7 +287,8 @@ class MegatronRewardModel(BasePPORewardModel):
         ends = attention_mask.cumsum(dim=-1).argmax(dim=-1).view(-1, 1)  # (bs, 1)
         rewards = torch.gather(token_level_rewards, dim=1, index=ends)  # (bs, 1)
 
-        if self.use_different_tokenizer:
+        if ori_values is not None:
+            # Restore original values if we modified the input (either for different tokenizer or question-only mode)
             data.batch.update(ori_values)
             input_ids = ori_values["input_ids"]
             attention_mask = ori_values["attention_mask"]

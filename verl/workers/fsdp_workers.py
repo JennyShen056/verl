@@ -34,7 +34,8 @@ from peft import LoraConfig, TaskType, get_peft_model
 from safetensors.torch import save_file
 from torch.distributed.device_mesh import init_device_mesh
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
-from torch.distributed.fsdp.api import FullStateDictConfig, ShardedStateDictConfig, StateDictType
+from torch.distributed.fsdp.api import (FullStateDictConfig,
+                                        ShardedStateDictConfig, StateDictType)
 
 try:
     # for torch 2.5+
@@ -46,49 +47,44 @@ import verl.utils.torch_functional as verl_F
 from verl import DataProto
 from verl.models.transformers.monkey_patch import apply_monkey_patch
 from verl.single_controller.base import Worker
-from verl.single_controller.base.decorator import Dispatch, make_nd_compute_dataproto_dispatch_fn, register
+from verl.single_controller.base.decorator import (
+    Dispatch, make_nd_compute_dataproto_dispatch_fn, register)
 from verl.utils import hf_processor, hf_tokenizer
 from verl.utils.activation_offload import enable_activation_offloading
 from verl.utils.checkpoint.fsdp_checkpoint_manager import FSDPCheckpointManager
 from verl.utils.config import omega_conf_to_dataclass
-from verl.utils.device import (
-    get_device_id,
-    get_device_name,
-    get_nccl_backend,
-    get_torch_device,
-    set_expandable_segments,
-)
+from verl.utils.device import (get_device_id, get_device_name,
+                               get_nccl_backend, get_torch_device,
+                               set_expandable_segments)
 from verl.utils.flops_counter import FlopsCounter
 from verl.utils.fs import copy_to_local
-from verl.utils.fsdp_utils import (
-    CPUOffloadPolicy,
-    MixedPrecisionPolicy,
-    apply_fsdp2,
-    collect_lora_params,
-    fsdp2_load_full_state_dict,
-    fsdp_version,
-    get_fsdp_wrap_policy,
-    get_init_weight_context_manager,
-    get_shard_placement_fn,
-    init_fn,
-    layered_summon_lora_params,
-    load_fsdp_model_to_gpu,
-    load_fsdp_optimizer,
-    offload_fsdp_model_to_cpu,
-    offload_fsdp_optimizer,
-    replace_lora_wrapper,
-)
+from verl.utils.fsdp_utils import (CPUOffloadPolicy, MixedPrecisionPolicy,
+                                   apply_fsdp2, collect_lora_params,
+                                   fsdp2_load_full_state_dict, fsdp_version,
+                                   get_fsdp_wrap_policy,
+                                   get_init_weight_context_manager,
+                                   get_shard_placement_fn, init_fn,
+                                   layered_summon_lora_params,
+                                   load_fsdp_model_to_gpu, load_fsdp_optimizer,
+                                   offload_fsdp_model_to_cpu,
+                                   offload_fsdp_optimizer,
+                                   replace_lora_wrapper)
 from verl.utils.import_utils import import_external_libs
 from verl.utils.memory_utils import aggressive_empty_cache
 from verl.utils.model import compute_position_id_with_mask, convert_weight_keys
-from verl.utils.profiler import DistProfiler, DistProfilerExtension, ProfilerConfig, log_gpu_memory_usage, simple_timer
-from verl.utils.profiler.performance import reduce_timing, topk_reduce_ratio_min_max
+from verl.utils.profiler import (DistProfiler, DistProfilerExtension,
+                                 ProfilerConfig, log_gpu_memory_usage,
+                                 simple_timer)
+from verl.utils.profiler.performance import (reduce_timing,
+                                             topk_reduce_ratio_min_max)
 from verl.utils.py_functional import convert_to_regular_types
 from verl.utils.ray_utils import get_event_loop
-from verl.workers.config import FSDPCriticConfig, FSDPEngineConfig, HFModelConfig, RolloutConfig
+from verl.workers.config import (FSDPCriticConfig, FSDPEngineConfig,
+                                 HFModelConfig, RolloutConfig)
 from verl.workers.config.optimizer import build_optimizer
 from verl.workers.rollout import get_rollout_class
-from verl.workers.sharding_manager.fsdp_ulysses import FSDPUlyssesShardingManager
+from verl.workers.sharding_manager.fsdp_ulysses import \
+    FSDPUlyssesShardingManager
 
 logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
@@ -281,15 +277,12 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
         enable_activation_offload=False,
     ):
         from torch.distributed.fsdp import CPUOffload, MixedPrecision
-        from transformers import (
-            AutoConfig,
-            AutoModel,
-            AutoModelForCausalLM,
-            AutoModelForImageTextToText,
-            AutoModelForVision2Seq,
-        )
+        from transformers import (AutoConfig, AutoModel, AutoModelForCausalLM,
+                                  AutoModelForImageTextToText,
+                                  AutoModelForVision2Seq)
 
-        from verl.utils.model import get_generation_config, print_model_size, update_model_config
+        from verl.utils.model import (get_generation_config, print_model_size,
+                                      update_model_config)
         from verl.utils.torch_dtypes import PrecisionType
 
         assert role in ["actor", "ref"]
@@ -384,7 +377,8 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
 
             # Apply Liger kernel to the model if use_liger is set to True
             if use_liger:
-                from liger_kernel.transformers.monkey_patch import _apply_liger_kernel_to_instance
+                from liger_kernel.transformers.monkey_patch import \
+                    _apply_liger_kernel_to_instance
 
                 _apply_liger_kernel_to_instance(model=actor_module)
 
@@ -538,7 +532,9 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
 
         # TODO: add more optimizer args into config
         if role == "actor" and optim_config is not None:
-            from verl.utils.torch_functional import get_constant_schedule_with_warmup, get_cosine_schedule_with_warmup
+            from verl.utils.torch_functional import (
+                get_constant_schedule_with_warmup,
+                get_cosine_schedule_with_warmup)
 
             actor_optimizer = build_optimizer(actor_module_fsdp.parameters(), optim_config)
 
@@ -1430,7 +1426,8 @@ class CriticWorker(Worker, DistProfilerExtension):
         if self.rank == 0:
             print(f"Total steps: {total_steps}, num_warmup_steps: {num_warmup_steps}")
 
-        from verl.utils.torch_functional import get_constant_schedule_with_warmup, get_cosine_schedule_with_warmup
+        from verl.utils.torch_functional import (
+            get_constant_schedule_with_warmup, get_cosine_schedule_with_warmup)
 
         if lr_scheduler_type == "constant":
             critic_lr_scheduler = get_constant_schedule_with_warmup(
@@ -1722,8 +1719,10 @@ class RewardModelWorker(Worker, DistProfilerExtension):
         self.reward_module = self._build_model(config=self.config)
 
     def _forward_micro_batch(self, micro_batch):
-        from verl.utils.attention_utils import index_first_axis, pad_input, rearrange, unpad_input
-        from verl.utils.ulysses import gather_outputs_and_unpad, ulysses_pad_and_slice_inputs
+        from verl.utils.attention_utils import (index_first_axis, pad_input,
+                                                rearrange, unpad_input)
+        from verl.utils.ulysses import (gather_outputs_and_unpad,
+                                        ulysses_pad_and_slice_inputs)
 
         with torch.no_grad(), torch.autocast(device_type=device_name, dtype=torch.bfloat16):
             input_ids = micro_batch["input_ids"]
@@ -1866,18 +1865,109 @@ class RewardModelWorker(Worker, DistProfilerExtension):
 
         return DataProto.from_dict(rm_inputs)
 
+    def _build_rm_input_with_question_only(self, data: DataProto):
+        """
+        Build reward model inputs using question-only prompt (without previous answer/feedback context).
+        This is useful when you want the policy to learn from feedback examples, but the reward model
+        should only evaluate based on the question + generated answer.
+        """
+        src_max_length = data.batch["attention_mask"].shape[-1]
+        
+        # Use input_tokenizer if available, otherwise use reward model tokenizer
+        src_tokenizer = self.input_tokenizer if self._do_switch_chat_template else self.tokenizer
+        target_tokenizer = self.tokenizer
+        
+        rm_input_ids = []
+        rm_attention_mask = []
+        
+        for i in range(data.batch.batch_size[0]):
+            # Get the question-only prompt from reward_model metadata
+            if "reward_model" in data.non_tensor_batch and "prompt_for_rm" in data.non_tensor_batch["reward_model"][i]:
+                question_only_chat = list(data.non_tensor_batch["reward_model"][i]["prompt_for_rm"])
+            else:
+                # Fallback: use the regular raw_prompt if prompt_for_rm is not available
+                if "raw_prompt" in data.non_tensor_batch:
+                    question_only_chat = list(data.non_tensor_batch["raw_prompt"][i])
+                else:
+                    # Last resort: use the full input_ids (original behavior)
+                    raise ValueError("Neither 'prompt_for_rm' nor 'raw_prompt' found in data")
+            
+            # Extract response
+            response_ids = data.batch["responses"][i]
+            response_length = response_ids.shape[-1]
+            valid_response_length = data.batch["attention_mask"][i][-response_length:].sum()
+            valid_response_ids = response_ids[:valid_response_length]
+            
+            # Decode response
+            response = src_tokenizer.decode(valid_response_ids)
+            # Remove bos and eos
+            response = response.replace(src_tokenizer.eos_token, "")
+            
+            # Build conversation: question-only + response
+            question_only_chat.append({"role": "assistant", "content": response})
+            
+            # Apply chat template
+            prompt_with_chat_template = target_tokenizer.apply_chat_template(
+                question_only_chat, add_generation_prompt=False, tokenize=False
+            )
+            
+            if self.rank == 0 and i == 0:
+                # For debugging purpose
+                print(f"[RM Question-Only Mode] chat: {prompt_with_chat_template}")
+            
+            # Tokenize
+            max_length = self.config.get("max_length", src_max_length)
+            if max_length is None:
+                max_length = src_max_length
+            
+            model_inputs = target_tokenizer(prompt_with_chat_template, return_tensors="pt", add_special_tokens=False)
+            input_ids, attention_mask = verl_F.postprocess_data(
+                input_ids=model_inputs["input_ids"],
+                attention_mask=model_inputs["attention_mask"],
+                max_length=max_length,
+                pad_token_id=target_tokenizer.pad_token_id,
+                left_pad=False,  # right padding
+                truncation=self.config.get("truncation", "right"),
+            )
+            
+            rm_input_ids.append(input_ids)
+            rm_attention_mask.append(attention_mask)
+        
+        rm_input_ids = torch.cat(rm_input_ids, dim=0)
+        rm_attention_mask = torch.cat(rm_attention_mask, dim=0)
+        rm_position_ids = compute_position_id_with_mask(rm_attention_mask)
+        
+        rm_inputs = {"input_ids": rm_input_ids, "attention_mask": rm_attention_mask, "position_ids": rm_position_ids}
+        
+        return DataProto.from_dict(rm_inputs)
+
     @register(dispatch_mode=make_nd_compute_dataproto_dispatch_fn(mesh_name="reward"))
     @DistProfiler.annotate(color="brown")
     def compute_rm_score(self, data: DataProto):
         import itertools
 
-        from verl.utils.seqlen_balancing import get_reverse_idx, rearrange_micro_batches
+        from verl.utils.seqlen_balancing import (get_reverse_idx,
+                                                 rearrange_micro_batches)
 
         # Support all hardwares
         data = data.to(get_device_id())
-        if self._do_switch_chat_template:
+        
+        # Check if we should use question-only prompt for reward model
+        use_question_only = False
+        if "reward_model" in data.non_tensor_batch:
+            # Check first example to see if prompt_for_rm exists
+            first_rm_data = data.non_tensor_batch["reward_model"][0]
+            if isinstance(first_rm_data, dict) and "prompt_for_rm" in first_rm_data:
+                use_question_only = True
+        
+        if use_question_only:
+            # Use question-only prompt (without previous answer/feedback context)
+            rm_data = self._build_rm_input_with_question_only(data)
+        elif self._do_switch_chat_template:
+            # Use the regular chat template switching
             rm_data = self._switch_chat_template(data)
         else:
+            # Use the full input_ids as-is
             rm_input_ids = data.batch["input_ids"]
             rm_attention_mask = data.batch["attention_mask"]
             rm_position_ids = data.batch["position_ids"]

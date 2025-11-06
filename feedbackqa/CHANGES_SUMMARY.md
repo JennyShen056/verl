@@ -1,213 +1,164 @@
-# Summary of Changes to rm_train.py for verl Compatibility
+# Summary of Changes: Question-Only Reward Model Input
 
 ## Problem
-The original script trained a binary classification model using `AutoModelForSequenceClassification`, which outputs 2 logits (one per class). However, verl's PPO training expects a reward model that:
-1. Uses `AutoModelForTokenClassification`
-2. Outputs a **single scalar score** per token position
-3. Has `num_labels=1` in the config
+You wanted the **policy model** to learn from full context (question + previous answer + feedback), but the **reward model** should only evaluate based on the question + generated answer (without previous context).
 
-## Changes Made
+## Solution
+Modified the codebase to support storing and using two different prompts:
+1. **Full prompt** → Used by policy during rollout
+2. **Question-only prompt** → Used by reward model during evaluation
 
-### 1. Import Statement (Line 13-21)
-**Before:**
+---
+
+## Files Modified
+
+### 1. `feedbackqa/preprocess_ppo_case2_with_feedback.py`
+**Lines 116-133**: Added `prompt_for_rm` field
+
+**What it does**:
+- Stores question-only prompt in `reward_model.prompt_for_rm`
+- Full context remains in `prompt` for policy training
+
 ```python
-from transformers import (
-    AutoModelForSequenceClassification,
-    ...
-)
+"prompt_for_rm": [{"role": "user", "content": question}]  # Question only
 ```
 
-**After:**
-```python
-from transformers import (
-    AutoModelForTokenClassification,  # Changed for verl compatibility
-    ...
-)
+### 2. `verl/workers/fsdp_workers.py`
+**Lines 1868-1942**: Added `_build_rm_input_with_question_only()` method
+
+**Lines 1955-1979**: Modified `compute_rm_score()` to detect and use question-only prompts
+
+**What it does**:
+- Automatically detects if `prompt_for_rm` exists
+- Rebuilds input as: question + generated_response
+- Falls back to regular prompt if `prompt_for_rm` not found
+
+### 3. `verl/workers/reward_model/megatron/reward_model.py`
+**Lines 131-220**: Added `build_question_only_input()` method
+
+**Lines 227-240**: Modified `compute_reward()` to detect and use question-only prompts
+
+**Line 290**: Updated to restore original values for both question-only and different tokenizer modes
+
+**What it does**:
+- Same as FSDP but for Megatron backend
+- Handles Megatron-specific tokenizer differences
+
+---
+
+## How to Use
+
+### Step 1: Reprocess Your Data
+```bash
+python feedbackqa/preprocess_ppo_case2_with_feedback.py \
+    --train_file feedbackqa/feedback_train_ppo.json \
+    --valid_file feedbackqa/feedback_valid_ppo.json \
+    --test_file feedbackqa/feedback_test_ppo.json \
+    --local_save_dir ~/data/feedback_qa_ppo/case2_with_feedback
 ```
 
-**Why:** verl expects `AutoModelForTokenClassification` which outputs per-token scores.
-
-### 2. Model Configuration (Line 298-311)
-**Before:**
-```python
-config.num_labels = 2  # Binary classification: 2 classes (0, 1)
-config.problem_type = "single_label_classification"
-config.classifier_dropout = 0.1
-
-self.model = AutoModelForSequenceClassification.from_pretrained(...)
+### Step 2: Run Training (No Changes Needed!)
+```bash
+bash feedbackqa/run_ppo_case2_with_feedback.sh
 ```
 
-**After:**
-```python
-config.num_labels = 1  # Single scalar output for reward score
-config.classifier_dropout = 0.0  # verl uses 0.0 dropout
+The system will automatically:
+1. Detect `prompt_for_rm` in the data
+2. Use full prompt for policy rollout
+3. Use question-only prompt for reward model evaluation
 
-self.model = AutoModelForTokenClassification.from_pretrained(...)
-```
-
-**Why:** 
-- `num_labels=1` → single reward score instead of 2 class probabilities
-- `classifier_dropout=0.0` → matches verl's FSDP worker configuration
-- Changed model class to match verl's expectations
-
-### 3. Label Format (Line 341-343)
-**Before:**
-```python
-# Ensure labels are integers (0 or 1) for classification
-tokenized["labels"] = [int(label) for label in examples["label"]]
-```
-
-**After:**
-```python
-# Convert binary labels (0, 1) to float reward scores
-# verl will use the score at EOS position as the reward
-tokenized["labels"] = [float(label) for label in examples["label"]]
-```
-
-**Why:** Reward models output continuous scores, not discrete classes.
-
-### 4. Metrics Computation (Line 346-408)
-**Before:**
-```python
-# For binary classification, predictions are logits of shape [batch_size, 2]
-# We take the softmax and use the probability of class 1
-probs = F.softmax(torch.from_numpy(predictions), dim=-1)[:, 1].numpy()
-predicted_classes = (probs > 0.5).astype(int)
-```
-
-**After:**
-```python
-# For reward model with num_labels=1, predictions are of shape [batch_size, seq_len, 1]
-# Extract the score at the EOS position (last valid token)
-if len(predictions.shape) == 3:
-    scores = predictions[:, -1, 0]  # Take last position score
-elif len(predictions.shape) == 2:
-    scores = predictions[:, -1]
-else:
-    scores = predictions.squeeze()
-
-# Apply sigmoid to map to [0, 1] probability range
-probs = torch.sigmoid(torch.from_numpy(scores)).numpy()
-predicted_classes = (probs > 0.5).astype(int)
-```
-
-**Why:** TokenClassification outputs per-token scores, need to extract the relevant one.
-
-### 5. Training Summary (Line 513-535)
-**Before:**
-```python
-"classification_type": "binary",
-"model_config": {
-    "num_labels": 2,
-    "problem_type": "single_label_classification",
-    ...
-}
-```
-
-**After:**
-```python
-"model_type": "token_classification_reward_model",
-"verl_compatible": True,
-"model_config": {
-    "num_labels": 1,
-    "architecture": "AutoModelForTokenClassification",
-    "output_type": "single_scalar_reward_per_token",
-    ...
-}
-```
-
-**Why:** Document that the model is verl-compatible.
-
-### 6. Docstrings and Comments
-Updated all docstrings to reflect the new purpose:
-- Class docstring mentions verl compatibility
-- Method docstrings explain reward model behavior
-- Comments clarify that EOS token position is used for rewards
-
-## How It Works with verl
-
-```
-Training (rm_train.py):
-┌─────────────────────────────────────────┐
-│ Input: question + answer + label (0/1)  │
-│ Model: TokenClassification (num_labels=1)│
-│ Output: Scalar score per token position │
-│ Loss: MSE/BCE at EOS position           │
-└─────────────────────────────────────────┘
-                    ↓
-            Saved Model
-                    ↓
-Inference (verl/workers/fsdp_workers.py):
-┌─────────────────────────────────────────┐
-│ 1. Load via AutoModelForTokenClassification│
-│ 2. Forward: get logits [batch, seq, 1] │
-│ 3. Extract: score at EOS position      │
-│ 4. Return: single scalar reward per seq│
-└─────────────────────────────────────────┘
-                    ↓
-PPO Training (verl/trainer/ppo/ray_trainer.py):
-┌─────────────────────────────────────────┐
-│ 1. Call rm_wg.compute_rm_score(batch)  │
-│ 2. Get rm_scores in batch              │
-│ 3. Use for advantage computation       │
-│ 4. Update policy via PPO               │
-└─────────────────────────────────────────┘
-```
+---
 
 ## Verification
 
-After training, verify your model:
-```bash
-python feedbackqa/verify_trained_model.py --model_path ./feedback_qa_reward_model/final_model
+During training, look for these debug messages:
+
+**FSDP Backend:**
+```
+[RM Question-Only Mode] chat: <user>What is X?</user><assistant>...</assistant>
 ```
 
-This will check:
-- ✓ `num_labels=1`
-- ✓ Uses `AutoModelForTokenClassification`
-- ✓ Output shape is `[batch_size, seq_len, 1]`
-- ✓ Can extract reward at EOS position
-
-## Usage
-
-1. **Train the reward model:**
-```bash
-python feedbackqa/rm_train.py \
-    --train_file feedbackqa/feedback_train_rm.json \
-    --valid_file feedbackqa/feedback_valid_rm.json \
-    --test_file feedbackqa/feedback_test_rm.json \
-    --model_name meta-llama/Llama-3.2-3B-Instruct \
-    --output_dir ./feedback_qa_reward_model
+**Megatron Backend:**
+```
+[Megatron RM Question-Only Mode] chat: ...
 ```
 
-2. **Verify it works:**
-```bash
-python feedbackqa/verify_trained_model.py
+This confirms the reward model is using question-only inputs!
+
+---
+
+## Data Flow Diagram
+
+```
+Dataset
+  ↓
+  ├─→ prompt: [Full Context]           → Policy Model (Rollout)
+  │                                           ↓
+  │                                    [Generates Response]
+  │                                           ↓
+  └─→ reward_model.prompt_for_rm:     → Reward Model
+      [Question Only] + [Response]         (Evaluation)
 ```
 
-3. **Use in PPO:**
+---
+
+## Benefits
+
+✅ Policy learns from rich feedback context  
+✅ Reward model provides unbiased evaluation  
+✅ Automatic detection (no config changes)  
+✅ Backward compatible (falls back if field missing)  
+✅ Works with both FSDP and Megatron backends  
+
+---
+
+## Testing
+
+Test on a small dataset first:
 ```bash
-bash feedbackqa/run_ppo_with_trained_rm.sh
+# Create small test set
+head -n 100 feedbackqa/feedback_train_ppo.json > feedbackqa/feedback_train_small.json
+
+# Preprocess
+python feedbackqa/preprocess_ppo_case2_with_feedback.py \
+    --train_file feedbackqa/feedback_train_small.json \
+    --local_save_dir ~/data/feedback_qa_test
+
+# Check output
+python -c "
+import pandas as pd
+df = pd.read_parquet('~/data/feedback_qa_test/train.parquet')
+print('Full prompt:', df.iloc[0]['prompt'])
+print('RM prompt:', df.iloc[0]['reward_model']['prompt_for_rm'])
+"
 ```
 
-Or in your config:
-```bash
-reward_model.enable=True \
-reward_model.model.path=./feedback_qa_reward_model/final_model
-```
+---
 
-## Files Created/Modified
+## Troubleshooting
 
-| File | Status | Purpose |
-|------|--------|---------|
-| `rm_train.py` | **Modified** | Main training script (verl-compatible) |
-| `run_ppo_with_trained_rm.sh` | **New** | Example PPO script |
-| `verify_trained_model.py` | **New** | Verification tool |
-| `README_VERL_INTEGRATION.md` | **New** | Complete guide |
-| `CHANGES_SUMMARY.md` | **New** | This file |
+### Problem: RM still sees full context
+**Check**: Did you reprocess the data with the updated script?
+**Check**: Does your parquet file have `prompt_for_rm` field?
 
-## Key Takeaway
+### Problem: Training crashes
+**Check**: Are you using the reprocessed data files?
+**Check**: Check logs for error messages
 
-**The model now outputs a single scalar reward per token position (compatible with verl) instead of 2 class probabilities (standard classification).**
+### Problem: No debug messages
+**Check**: Make sure you're looking at the correct process logs (rank 0)
 
-This makes it directly usable as a reward signal in verl's PPO training pipeline without any additional conversion or wrapping!
+---
 
+## Related Files
+
+📖 **Full Guide**: `feedbackqa/QUESTION_ONLY_RM_GUIDE.md`  
+🔧 **Preprocessing**: `feedbackqa/preprocess_ppo_case2_with_feedback.py`  
+⚙️ **FSDP Worker**: `verl/workers/fsdp_workers.py`  
+⚙️ **Megatron RM**: `verl/workers/reward_model/megatron/reward_model.py`  
+
+---
+
+## Questions?
+
+See `QUESTION_ONLY_RM_GUIDE.md` for detailed documentation!
