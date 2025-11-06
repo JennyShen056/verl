@@ -16,7 +16,7 @@ TRAIN_DATA="$DATA_DIR/train.parquet"
 VALID_DATA="$DATA_DIR/valid.parquet"
 
 # huggingface-cli download Jennny/qa_rm --local-dir $HOME/models/qa_rm &
-huggingface-cli download sfairXC/FsfairX-LLaMA3-RM-v0.1 --local-dir $HOME/models/FsfairX-LLaMA3-RM-v0.1 &
+huggingface-cli download Jennny/qa_rm --local-dir $HOME/models/qa_rm &
 
 echo "========================================="
 echo "PPO Training - Case 1: Question Only"
@@ -56,7 +56,7 @@ python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.param_offload=False \
     critic.model.fsdp_config.optimizer_offload=False \
     reward_model.enable=True \
-    reward_model.model.path="$HOME/models/FsfairX-LLaMA3-RM-v0.1" \
+    reward_model.model.path="$HOME/models/qa_rm" \
     reward_model.model.input_tokenizer=null \
     reward_model.model.use_remove_padding=True \
     reward_model.model.fsdp_config.param_offload=True \
