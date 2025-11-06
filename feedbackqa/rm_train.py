@@ -465,7 +465,7 @@ class BinaryClassificationRewardModelTrainer:
             weight_decay=0.01,
             learning_rate=learning_rate,
             logging_dir=f"{self.output_dir}/logs",
-            logging_steps=50,  # Frequent logging for monitoring
+            logging_steps=20,  # Frequent logging for monitoring
             eval_strategy="steps",
             eval_steps=calculated_eval_steps,
             save_strategy="steps",
