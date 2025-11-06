@@ -69,7 +69,7 @@ python3 -m verl.trainer.main_ppo \
     trainer.val_before_train=False \
     trainer.save_freq=5 \
     trainer.test_freq=2 \
-    trainer.total_epochs=3 $@
+    trainer.total_epochs=1 $@
 
 echo ""
 echo "========================================="
