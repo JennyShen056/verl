@@ -1,6 +1,8 @@
 # Evaluation Script Fix Summary
 
-## Issue Fixed
+## Issues Fixed
+
+### Issue 1: Missing Global Step Variable
 
 The `run_full_evaluation.sh` script was failing with the error:
 ```
@@ -8,9 +10,16 @@ Repo id must be in the form 'repo_name' or 'namespace/repo_name':
 'checkpoints/feedback_qa_experiment/case1_question_only_baseline/global_step_/actor/huggingface'
 ```
 
-### Root Cause
+**Root Cause**: The `GLOBAL_STEP` variable was commented out (line 23) but still being used to construct model paths (lines 61-62), resulting in malformed paths like `global_step_/actor/huggingface` (with no step number).
 
-The `GLOBAL_STEP` variable was commented out (line 23) but still being used to construct model paths (lines 61-62), resulting in malformed paths like `global_step_/actor/huggingface` (with no step number).
+### Issue 2: BFloat16 Numpy Conversion Error
+
+The `evaluate.py` script was failing with:
+```
+TypeError: Got unsupported ScalarType BFloat16
+```
+
+**Root Cause**: When converting reward model logits (in bfloat16 format) directly to numpy, older numpy versions don't support bfloat16 scalar type. Need to convert to float32 first.
 
 ## Changes Made
 
@@ -77,9 +86,9 @@ def load_model_and_tokenizer(model_path: str, device: str = "auto"):
     )
 ```
 
-### 3. ✅ Improved `evaluate.py`
+### 3. ✅ Fixed `evaluate.py`
 
-Added same `local_files_only` improvement for reward model loading:
+**Fix 1**: Added `local_files_only` improvement for reward model loading:
 
 ```python
 def load_reward_model(model_path: str, device: str = "auto"):
@@ -103,12 +112,32 @@ def load_reward_model(model_path: str, device: str = "auto"):
     )
 ```
 
+**Fix 2**: Fixed BFloat16 to numpy conversion:
+
+```python
+# Before (caused error):
+scores = logits.squeeze(-1).cpu().numpy()  # ❌ TypeError with bfloat16
+
+# After (works correctly):
+scores = logits.squeeze(-1).float().cpu().numpy()  # ✅ Convert to float32 first
+```
+
+This fix applies to both `num_labels=1` and `num_labels=2` cases:
+
+```python
+if logits.shape[-1] == 1:
+    scores = logits.squeeze(-1).float().cpu().numpy()  # Convert to float32
+elif logits.shape[-1] == 2:
+    scores = logits[:, 1].float().cpu().numpy()  # Convert to float32
+```
+
 ## Benefits
 
 1. **Fixed variable mismatch**: Each case now has its own global step variable
 2. **Prevents HuggingFace Hub errors**: Local paths won't trigger Hub validation
-3. **Clearer configuration**: Easy to see which checkpoint step is used for each case
-4. **Better error messages**: Will fail earlier with clearer messages if paths don't exist
+3. **Fixed numpy compatibility**: BFloat16 tensors now convert correctly to numpy
+4. **Clearer configuration**: Easy to see which checkpoint step is used for each case
+5. **Better error messages**: Will fail earlier with clearer messages if paths don't exist
 
 ## How to Use
 
