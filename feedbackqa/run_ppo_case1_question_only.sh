@@ -7,7 +7,7 @@
 set -x
 
 # Paths
-TRAINED_RM_PATH="./feedback_qa_reward_model/final_model"
+TRAINED_RM_PATH="$HOME/feedback_qa_reward_model/final_model"
 DATA_DIR="$HOME/data/feedback_qa_ppo/case1_question_only"
 POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 
@@ -25,11 +25,12 @@ if [ ! -f "$TRAIN_DATA" ]; then
     exit 1
 fi
 
-# if [ ! -d "$TRAINED_RM_PATH" ]; then
-#     echo "ERROR: Trained reward model not found at $TRAINED_RM_PATH"
-#     echo "Please run: python feedbackqa/rm_train.py"
-#     exit 1
-# fi
+if [ ! -d "$TRAINED_RM_PATH" ]; then
+    echo "ERROR: Trained reward model not found at $TRAINED_RM_PATH"
+    echo "Please train the reward model first: python feedbackqa/rm_train.py"
+    echo "Or use FsfairX pre-trained model instead"
+    exit 1
+fi
 
 echo "========================================="
 echo "PPO Training - Case 1: Question Only"
@@ -70,7 +71,6 @@ python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.optimizer_offload=False \
     reward_model.enable=True \
     reward_model.model.path="$TRAINED_RM_PATH" \
-    reward_model.model.input_tokenizer=null \
     reward_model.model.use_remove_padding=True \
     reward_model.model.fsdp_config.param_offload=True \
     reward_model.micro_batch_size_per_gpu=16 \
