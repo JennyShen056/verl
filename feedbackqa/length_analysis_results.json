@@ -1,0 +1,46 @@
+{
+  "model_name": "meta-llama/Llama-3.1-8B-Instruct",
+  "total_examples": 5400,
+  "case2_with_previous": 5400,
+  "case2_without_previous": 0,
+  "case1_prompt": {
+    "mean": 15.38962962962963,
+    "median": 15.0,
+    "min": 6,
+    "max": 37,
+    "p50": 15.0,
+    "p90": 22.0,
+    "p95": 24.0,
+    "p99": 31.0
+  },
+  "case2_prompt": {
+    "mean": 283.04796296296297,
+    "median": 232.0,
+    "min": 61,
+    "max": 2055,
+    "p50": 232.0,
+    "p90": 476.0,
+    "p95": 606.0,
+    "p99": 987.0100000000002
+  },
+  "response": {
+    "mean": 197.29,
+    "median": 145.0,
+    "min": 3,
+    "max": 1958,
+    "p50": 145.0,
+    "p90": 389.0,
+    "p95": 515.0500000000002,
+    "p99": 915.0600000000013
+  },
+  "recommended_config": {
+    "case1": {
+      "max_prompt_length": 128,
+      "max_response_length": 640
+    },
+    "case2": {
+      "max_prompt_length": 640,
+      "max_response_length": 640
+    }
+  }
+}
