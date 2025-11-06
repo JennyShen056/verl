@@ -79,4 +79,3 @@ echo "Case 1 Training Complete!"
 echo "========================================="
 echo "Model saved to default checkpoint directory"
 echo "Next: Train Case 2 and compare results"
-
