@@ -1,0 +1,71 @@
+{
+  "case1_metrics": {
+    "mean_reward": 0.80090087890625,
+    "std_reward": 0.34648632319095124,
+    "min_reward": -1.015625,
+    "max_reward": 1.953125,
+    "median_reward": 0.865234375,
+    "q25_reward": 0.7470703125,
+    "q75_reward": 0.9375,
+    "num_samples": 100
+  },
+  "case2_metrics": {
+    "mean_reward": 0.880048828125,
+    "std_reward": 0.40413713313212296,
+    "min_reward": -0.8203125,
+    "max_reward": 2.4375,
+    "median_reward": 0.87890625,
+    "q25_reward": 0.7998046875,
+    "q75_reward": 0.97265625,
+    "num_samples": 100
+  },
+  "metric_comparison": {
+    "mean_reward": {
+      "case1": 0.80090087890625,
+      "case2": 0.880048828125,
+      "difference": 0.07914794921875001,
+      "percent_change": 9.882365134476863,
+      "case2_better": true
+    },
+    "std_reward": {
+      "case1": 0.34648632319095124,
+      "case2": 0.40413713313212296,
+      "difference": 0.05765080994117172,
+      "percent_change": 16.63869713824171,
+      "case2_better": false
+    },
+    "median_reward": {
+      "case1": 0.865234375,
+      "case2": 0.87890625,
+      "difference": 0.013671875,
+      "percent_change": 1.580135440180587,
+      "case2_better": true
+    },
+    "min_reward": {
+      "case1": -1.015625,
+      "case2": -0.8203125,
+      "difference": 0.1953125,
+      "percent_change": 19.230769230769234,
+      "case2_better": true
+    },
+    "max_reward": {
+      "case1": 1.953125,
+      "case2": 2.4375,
+      "difference": 0.484375,
+      "percent_change": 24.8,
+      "case2_better": true
+    }
+  },
+  "statistical_tests": {
+    "t_statistic": -1.479356950349241,
+    "t_test_pvalue": 0.14063416855020683,
+    "mann_whitney_u": 4501.5,
+    "mann_whitney_pvalue": 0.22364058527578612,
+    "cohens_d": 0.21026664104007292,
+    "effect_size_interpretation": "small",
+    "win_rate": 0.58,
+    "case2_wins": 58,
+    "ties": 4,
+    "case1_wins": 38
+  }
+}
