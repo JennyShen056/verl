@@ -28,10 +28,15 @@ def load_model_and_tokenizer(model_path: str, device: str = "auto"):
     """Load trained model and tokenizer"""
     print(f"Loading model from: {model_path}")
     
+    # Check if path exists locally
+    import os
+    is_local = os.path.exists(model_path)
+    
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
         trust_remote_code=True,
-        use_fast=True
+        use_fast=True,
+        local_files_only=is_local  # Only use local files if path exists
     )
     
     if tokenizer.pad_token is None:
@@ -42,6 +47,7 @@ def load_model_and_tokenizer(model_path: str, device: str = "auto"):
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
         device_map=device,
+        local_files_only=is_local  # Only use local files if path exists
     )
     
     model.eval()
