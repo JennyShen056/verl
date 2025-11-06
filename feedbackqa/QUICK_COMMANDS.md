@@ -2,13 +2,21 @@
 
 ## **After Training Completes**
 
-### **Option 1: Automated (Recommended)**
+### **Option 1: Automated - 100 Samples (Recommended)**
 ```bash
-# Run complete evaluation pipeline
+# Run complete evaluation pipeline on 100 random samples
+# Uses same 100 samples for both Case 1 and Case 2
 bash feedbackqa/run_full_evaluation.sh 1
 
+# Time: ~15-30 minutes
 # Results saved to outputs/comparison_report.json
 ```
+
+**What it does:**
+- Creates 100-sample subset (seed=42, same samples every time)
+- Evaluates both cases on identical test set
+- Full statistical comparison
+- Fast for quick iteration!
 
 ### **Option 2: Manual Control**
 

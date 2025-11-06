@@ -9,7 +9,7 @@ set -x
 # Paths
 TRAINED_RM_PATH="./feedback_qa_reward_model/final_model"
 DATA_DIR="$HOME/data/feedback_qa_ppo/case2_with_feedback"
-POLICY_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 
 # Training data (preprocessed with case2 script)
 TRAIN_DATA="$DATA_DIR/train.parquet"
