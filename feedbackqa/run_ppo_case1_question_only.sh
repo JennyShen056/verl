@@ -17,21 +17,6 @@ VALID_DATA="$DATA_DIR/valid.parquet"
 
 huggingface-cli download Jennny/qa_rm --local-dir $HOME/models/qa_rm &
 
-# Check if data exists
-if [ ! -f "$TRAIN_DATA" ]; then
-    echo "ERROR: Training data not found at $TRAIN_DATA"
-    echo "Please run: python feedbackqa/preprocess_ppo_case1_question_only.py"
-    exit 1
-fi
-
-if [ ! -d "$TRAINED_RM_PATH" ]; then
-    echo "ERROR: Trained reward model not found at $TRAINED_RM_PATH"
-    echo "Please train the reward model first: python feedbackqa/rm_train.py"
-    exit 1
-fi
-
-echo "Using trained reward model: $TRAINED_RM_PATH"
-
 echo "========================================="
 echo "PPO Training - Case 1: Question Only"
 echo "========================================="
