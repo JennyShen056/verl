@@ -7,7 +7,7 @@
 set -x
 
 # Paths
-TRAINED_RM_PATH="/workspace/verl/feedbackqa/feedback_qa_reward_model"
+# TRAINED_RM_PATH="/workspace/verl/feedbackqa/feedback_qa_reward_model"
 DATA_DIR="$HOME/data/feedback_qa_ppo/case2_with_feedback"
 POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 
@@ -15,20 +15,7 @@ POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 TRAIN_DATA="$DATA_DIR/train.parquet"
 VALID_DATA="$DATA_DIR/valid.parquet"
 
-# Check if data exists
-if [ ! -f "$TRAIN_DATA" ]; then
-    echo "ERROR: Training data not found at $TRAIN_DATA"
-    echo "Please run: python feedbackqa/preprocess_ppo_case2_with_feedback.py"
-    exit 1
-fi
-
-if [ ! -d "$TRAINED_RM_PATH" ]; then
-    echo "ERROR: Trained reward model not found at $TRAINED_RM_PATH"
-    echo "Please train the reward model first: python feedbackqa/rm_train.py"
-    exit 1
-fi
-
-echo "Using trained reward model: $TRAINED_RM_PATH"
+huggingface-cli download Jennny/qa_rm --local-dir $HOME/models/qa_rm &
 
 echo "========================================="
 echo "PPO Training - Case 2: With Feedback"
@@ -68,8 +55,7 @@ python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.param_offload=False \
     critic.model.fsdp_config.optimizer_offload=False \
     reward_model.enable=True \
-    reward_model.model.path="$TRAINED_RM_PATH" \
-    reward_model.model.input_tokenizer=null \
+    reward_model.model.path="$HOME/models/qa_rm" \
     reward_model.model.use_remove_padding=True \
     reward_model.model.fsdp_config.param_offload=True \
     reward_model.micro_batch_size_per_gpu=16 \
