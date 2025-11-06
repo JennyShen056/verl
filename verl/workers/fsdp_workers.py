@@ -1940,9 +1940,9 @@ class RewardModelWorker(Worker, DistProfilerExtension):
         rm_input_ids = torch.cat(rm_input_ids, dim=0)
         rm_attention_mask = torch.cat(rm_attention_mask, dim=0)
         rm_position_ids = compute_position_id_with_mask(rm_attention_mask)
-        
+
         rm_inputs = {"input_ids": rm_input_ids, "attention_mask": rm_attention_mask, "position_ids": rm_position_ids}
-        
+
         return DataProto.from_dict(rm_inputs)
 
     @register(dispatch_mode=make_nd_compute_dataproto_dispatch_fn(mesh_name="reward"))

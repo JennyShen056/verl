@@ -177,7 +177,7 @@ class ClassificationDataLoader:
 
 
 class BinaryClassificationRewardModelTrainer:
-    """Main trainer for feedback QA reward model with binary classification"""
+    """Main trainer for feedback QA reward model with scalar regression (num_labels=1)"""
 
     def __init__(
         self,
@@ -203,7 +203,7 @@ class BinaryClassificationRewardModelTrainer:
         valid_file: Optional[str] = None,
         test_file: Optional[str] = None,
     ) -> DatasetDict:
-        """Load and process formatted datasets for binary classification"""
+        """Load and process formatted datasets for scalar regression"""
         # Initialize loader with tokenizer for chat template
         loader = ClassificationDataLoader(tokenizer=self.tokenizer)
 
@@ -267,7 +267,7 @@ class BinaryClassificationRewardModelTrainer:
         return dataset_dict
 
     def setup_model_and_tokenizer(self):
-        """Setup model and tokenizer for binary classification"""
+        """Setup model and tokenizer for scalar regression"""
         self.logger.info(f"Loading tokenizer and model: {self.model_name}")
 
         # Load tokenizer
@@ -283,12 +283,12 @@ class BinaryClassificationRewardModelTrainer:
         )
         self.tokenizer.padding_side = "right"
 
-        # Load model config and set for binary classification
+        # Load model config and set for scalar regression (num_labels=1)
         config = AutoConfig.from_pretrained(self.model_name, trust_remote_code=True)
-        config.num_labels = 2  # Binary classification: 2 classes (0, 1)
-        config.problem_type = "single_label_classification"
+        config.num_labels = 1  # Scalar regression: single reward score
+        config.problem_type = "regression"
 
-        # Ensure proper classification head initialization
+        # Ensure proper regression head initialization
         config.classifier_dropout = 0.1  # Add dropout for regularization
         config.pad_token_id = self.tokenizer.pad_token_id  # important
 
@@ -313,14 +313,14 @@ class BinaryClassificationRewardModelTrainer:
 
         self.logger.info("Model and tokenizer setup complete")
         self.logger.info(
-            f"Model configuration: {config.num_labels} classes, {config.problem_type}"
+            f"Model configuration: {config.num_labels} output(s), {config.problem_type}"
         )
         self.logger.info(
-            f"Classification head dropout: {getattr(config, 'classifier_dropout', 'default')}"
+            f"Regression head dropout: {getattr(config, 'classifier_dropout', 'default')}"
         )
 
     def tokenize_function(self, examples):
-        """Tokenize text and ensure integer labels for classification"""
+        """Tokenize text and convert labels to float for regression"""
         tokenized = self.tokenizer(
             examples["text"],
             truncation=True,
@@ -328,39 +328,46 @@ class BinaryClassificationRewardModelTrainer:
             max_length=self.max_length,
             return_tensors=None,
         )
-        # Ensure labels are integers (0 or 1) for classification
-        tokenized["labels"] = [int(label) for label in examples["label"]]
+        # Convert binary labels to float targets for regression
+        # Label 0 (not relevant) → -1.0, Label 1 (relevant) → 1.0
+        tokenized["labels"] = [float(label) * 2.0 - 1.0 for label in examples["label"]]
         return tokenized
 
     def compute_metrics(self, eval_pred):
-        """Comprehensive binary classification metrics"""
+        """Comprehensive metrics for scalar regression with binary classification evaluation"""
         predictions, labels = eval_pred
 
-        # For binary classification, predictions are logits of shape [batch_size, 2]
-        # We take the softmax and use the probability of class 1
-        probs = F.softmax(torch.from_numpy(predictions), dim=-1)[:, 1].numpy()
-        predicted_classes = (probs > 0.5).astype(int)
+        # For regression with num_labels=1, predictions are scalars of shape [batch_size, 1] or [batch_size]
+        # Flatten to ensure consistent shape
+        if predictions.ndim > 1:
+            predictions = predictions.squeeze(-1)
+        
+        # Convert continuous predictions to binary classes using threshold 0.0
+        # (since we map labels to -1.0 and 1.0)
+        predicted_classes = (predictions > 0.0).astype(int)
+        
+        # Convert continuous labels back to binary (0, 1) for evaluation
+        # Labels are in range [-1.0, 1.0], convert back to {0, 1}
+        binary_labels = ((labels + 1.0) / 2.0).astype(int)
 
-        labels = labels.astype(int)
-
-        # Calculate comprehensive metrics
-        accuracy = accuracy_score(labels, predicted_classes)
+        # Calculate comprehensive metrics using binary labels
+        accuracy = accuracy_score(binary_labels, predicted_classes)
         precision = precision_score(
-            labels, predicted_classes, average="binary", zero_division=0
+            binary_labels, predicted_classes, average="binary", zero_division=0
         )
         recall = recall_score(
-            labels, predicted_classes, average="binary", zero_division=0
+            binary_labels, predicted_classes, average="binary", zero_division=0
         )
-        f1 = f1_score(labels, predicted_classes, average="binary", zero_division=0)
+        f1 = f1_score(binary_labels, predicted_classes, average="binary", zero_division=0)
 
-        # ROC-AUC (using probabilities)
+        # ROC-AUC (using continuous predictions as scores)
         try:
-            auc = roc_auc_score(labels, probs)
+            auc = roc_auc_score(binary_labels, predictions)
         except ValueError:
             auc = 0.0  # In case of single class in labels
 
         # Confusion matrix
-        cm = confusion_matrix(labels, predicted_classes)
+        cm = confusion_matrix(binary_labels, predicted_classes)
         tn, fp, fn, tp = cm.ravel() if cm.size == 4 else (0, 0, 0, 0)
 
         # Specificity (True Negative Rate)
@@ -386,9 +393,9 @@ class BinaryClassificationRewardModelTrainer:
         num_epochs: int = 2,
         batch_size: int = 16,
     ):
-        """Train the unified reward model with binary classification"""
+        """Train the unified reward model with scalar regression"""
         self.logger.info(
-            "Starting unified reward model training (binary classification)..."
+            "Starting unified reward model training (scalar regression)..."
         )
 
         tokenized_datasets = dataset.map(
@@ -410,7 +417,7 @@ class BinaryClassificationRewardModelTrainer:
         )
         self.logger.info(f"  Logging steps: {50}")
 
-        # Training arguments optimized for binary classification
+        # Training arguments optimized for scalar regression
         training_args = TrainingArguments(
             output_dir=self.output_dir,
             num_train_epochs=num_epochs,
@@ -429,14 +436,14 @@ class BinaryClassificationRewardModelTrainer:
             metric_for_best_model="f1",  # Use F1 score for best model selection
             greater_is_better=True,
             report_to="wandb",
-            run_name=f"unified_rm_classification_{self.model_name.split('/')[-1]}",
+            run_name=f"unified_rm_regression_{self.model_name.split('/')[-1]}",
             dataloader_pin_memory=False,
             gradient_checkpointing=True,
             fp16=False,
             bf16=True,
             remove_unused_columns=False,
-            # Additional classification-specific settings
-            label_smoothing_factor=0.0,  # No label smoothing for binary classification
+            # Additional regression-specific settings
+            label_smoothing_factor=0.0,  # Not applicable for regression
             seed=self.seed,
         )
 
@@ -485,7 +492,7 @@ class BinaryClassificationRewardModelTrainer:
         summary = {
             "model_name": self.model_name,
             "training_args": training_args.to_dict(),
-            "classification_type": "binary",
+            "model_type": "scalar_regression",
             "task": "feedback_qa_reward_model",
             "results": {
                 "train": train_results,
@@ -498,8 +505,8 @@ class BinaryClassificationRewardModelTrainer:
                 "test": len(tokenized_datasets["test"]),
             },
             "model_config": {
-                "num_labels": 2,
-                "problem_type": "single_label_classification",
+                "num_labels": 1,
+                "problem_type": "regression",
                 "max_length": self.max_length,
             },
         }
@@ -519,7 +526,7 @@ class BinaryClassificationRewardModelTrainer:
 def parse_arguments():
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(
-        description="Feedback QA Reward Model Trainer (Binary Classification)"
+        description="Feedback QA Reward Model Trainer (Scalar Regression with num_labels=1)"
     )
 
     # Data loading arguments
