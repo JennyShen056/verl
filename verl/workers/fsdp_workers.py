@@ -1640,17 +1640,20 @@ class RewardModelWorker(Worker, DistProfilerExtension):
         # download the checkpoint from hdfs
         local_path = copy_to_local(config.model.path, use_shm=use_shm)
 
+        # Always load the reward model's tokenizer
+        trust_remote_code = config.model.get("trust_remote_code", False)
+        self.tokenizer = hf_tokenizer(local_path, trust_remote_code=trust_remote_code)
+        
         if self.config.model.input_tokenizer is None:
             self._do_switch_chat_template = False
+            self.input_tokenizer = None
         else:
             self._do_switch_chat_template = True
             input_tokenizer_local_path = copy_to_local(config.model.input_tokenizer, use_shm=use_shm)
             self.input_tokenizer = hf_tokenizer(
-                input_tokenizer_local_path, trust_remote_code=config.model.get("trust_remote_code", False)
+                input_tokenizer_local_path, trust_remote_code=trust_remote_code
             )
-            self.tokenizer = hf_tokenizer(local_path, trust_remote_code=config.model.get("trust_remote_code", False))
 
-        trust_remote_code = config.model.get("trust_remote_code", False)
         model_config = AutoConfig.from_pretrained(local_path, trust_remote_code=trust_remote_code)
         model_config.num_labels = 1
 
@@ -1873,8 +1876,9 @@ class RewardModelWorker(Worker, DistProfilerExtension):
         """
         src_max_length = data.batch["attention_mask"].shape[-1]
         
-        # Use input_tokenizer if available, otherwise use reward model tokenizer
-        src_tokenizer = self.input_tokenizer if self._do_switch_chat_template else self.tokenizer
+        # Use input_tokenizer if available (for decoding responses), otherwise use reward model tokenizer
+        # When input_tokenizer is None, both source and target use the RM tokenizer
+        src_tokenizer = self.input_tokenizer if self.input_tokenizer is not None else self.tokenizer
         target_tokenizer = self.tokenizer
         
         rm_input_ids = []
