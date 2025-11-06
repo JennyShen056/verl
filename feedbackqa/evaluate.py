@@ -47,6 +47,8 @@ def load_reward_model(model_path: str, device: str = "auto"):
     
     print(f"✓ Reward model loaded")
     print(f"  Type: {model.__class__.__name__}")
+    print(f"  num_labels: {model.config.num_labels}")
+    print(f"  Format: {'Scalar regression (verl-compatible)' if model.config.num_labels == 1 else 'Binary classification (NOT verl-compatible)'}")
     print(f"  Device: {next(model.parameters()).device}")
     
     return model, tokenizer
@@ -120,14 +122,21 @@ def compute_reward_scores(
         # Get scores
         with torch.no_grad():
             outputs = reward_model(**inputs)
-            # For sequence classification, take the positive class logit
-            # Assuming label 1 = good, label 0 = bad
-            if outputs.logits.shape[-1] == 2:
-                # Binary classification: use class 1 score
-                scores = outputs.logits[:, 1].cpu().numpy()
+            logits = outputs.logits
+            
+            # Handle different reward model output formats
+            if logits.shape[-1] == 1:
+                # Scalar regression (num_labels=1): Direct reward score
+                # This is the correct format for verl-compatible reward models
+                # Shape: [batch_size, 1] or [batch_size]
+                scores = logits.squeeze(-1).cpu().numpy()
+            elif logits.shape[-1] == 2:
+                # Binary classification (num_labels=2): Use positive class logit
+                # Note: This format is NOT compatible with verl PPO training
+                # Shape: [batch_size, 2]
+                scores = logits[:, 1].cpu().numpy()
             else:
-                # Single output: use as-is
-                scores = outputs.logits.squeeze(-1).cpu().numpy()
+                raise ValueError(f"Unexpected logits shape: {logits.shape}. Expected last dim to be 1 or 2.")
         
         all_scores.extend(scores.tolist())
     
