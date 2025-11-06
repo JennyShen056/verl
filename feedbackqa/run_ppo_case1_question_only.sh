@@ -9,7 +9,7 @@ set -x
 # Paths
 TRAINED_RM_PATH="./feedback_qa_reward_model/final_model"
 DATA_DIR="$HOME/data/feedback_qa_ppo/case1_question_only"
-POLICY_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+POLICY_MODEL=meta-llama/Llama-3.1-8B-Instruct"
 
 # Training data (preprocessed with case1 script)
 TRAIN_DATA="$DATA_DIR/train.parquet"
@@ -79,7 +79,7 @@ python3 -m verl.trainer.main_ppo \
     trainer.nnodes=1 \
     trainer.save_freq=5 \
     trainer.test_freq=2 \
-    trainer.total_epochs=10 $@
+    trainer.total_epochs=1 $@
 
 echo ""
 echo "========================================="
