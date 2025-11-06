@@ -1,37 +1,26 @@
-import os
+import argparse
+import gc
 import json
+import logging
+import os
 import random
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Tuple, Optional, Any
-import logging
-from dataclasses import dataclass
-from datasets import Dataset, DatasetDict, load_dataset
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from transformers import (
-    AutoTokenizer,
-    AutoModelForSequenceClassification,
-    AutoConfig,
-    TrainingArguments,
-    Trainer,
-    DataCollatorWithPadding,
-    TrainerCallback,
-)
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    roc_auc_score,
-    confusion_matrix,
-)
 import wandb
+from datasets import Dataset, DatasetDict, load_dataset
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
+                             precision_score, recall_score, roc_auc_score)
+from sklearn.model_selection import train_test_split
 from tqdm import tqdm
-import gc
-import argparse
+from transformers import (AutoConfig, AutoModelForTokenClassification,
+                          AutoTokenizer, DataCollatorWithPadding, Trainer,
+                          TrainerCallback, TrainingArguments)
 
 # Environment setup
 for k in ["RANK", "WORLD_SIZE", "LOCAL_RANK", "MASTER_ADDR", "MASTER_PORT"]:
@@ -49,6 +38,37 @@ def set_seed(seed=42):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+
+
+class RewardModelTrainer(Trainer):
+    """Custom Trainer with Binary Cross-Entropy loss for reward model training"""
+    
+    def compute_loss(self, model, inputs, return_outputs=False):
+        """
+        Custom loss function using Binary Cross-Entropy for verl-compatible reward model.
+        
+        Model outputs: [batch_size, seq_len, 1] logits
+        We take the last token (EOS) logit and apply BCE loss.
+        """
+        labels = inputs.pop("labels")
+        
+        # Forward pass
+        outputs = model(**inputs)
+        logits = outputs.logits  # Shape: [batch_size, seq_len, 1]
+        
+        # Extract EOS token logits (last token in sequence)
+        # Shape: [batch_size, seq_len, 1] -> [batch_size, 1] -> [batch_size]
+        eos_logits = logits[:, -1, 0]  # Last token, first (only) class
+        
+        # Apply sigmoid and compute BCE loss
+        # BCE expects predictions and targets in [0, 1]
+        loss = F.binary_cross_entropy_with_logits(
+            eos_logits, 
+            labels.float(),
+            reduction='mean'
+        )
+        
+        return (loss, outputs) if return_outputs else loss
 
 
 class TrainingAccuracyCallback(TrainerCallback):
@@ -294,17 +314,17 @@ class BinaryClassificationRewardModelTrainer:
         )
         self.tokenizer.padding_side = "right"
 
-        # Load model config and set for binary classification
+        # Load model config and set for verl-compatible token classification
         config = AutoConfig.from_pretrained(self.model_name, trust_remote_code=True)
-        config.num_labels = 2  # Binary classification: 2 classes (0, 1)
+        config.num_labels = 1  # Single scalar reward per token (verl-compatible)
         config.problem_type = "single_label_classification"
 
         # Ensure proper classification head initialization
         config.classifier_dropout = 0.1  # Add dropout for regularization
         config.pad_token_id = self.tokenizer.pad_token_id  # important
 
-        # Load model
-        self.model = AutoModelForSequenceClassification.from_pretrained(
+        # Load model - using TokenClassification for verl compatibility
+        self.model = AutoModelForTokenClassification.from_pretrained(
             self.model_name,
             config=config,
             trust_remote_code=True,
@@ -324,14 +344,15 @@ class BinaryClassificationRewardModelTrainer:
 
         self.logger.info("Model and tokenizer setup complete")
         self.logger.info(
-            f"Model configuration: {config.num_labels} classes, {config.problem_type}"
+            f"Model configuration: {config.num_labels} labels, {config.problem_type}"
         )
         self.logger.info(
             f"Classification head dropout: {getattr(config, 'classifier_dropout', 'default')}"
         )
+        self.logger.info("Loss function: Binary Cross-Entropy (BCE) - optimal for binary labels")
 
     def tokenize_function(self, examples):
-        """Tokenize text and ensure integer labels for classification"""
+        """Tokenize text and convert binary labels to float scores for verl compatibility"""
         tokenized = self.tokenizer(
             examples["text"],
             truncation=True,
@@ -339,19 +360,26 @@ class BinaryClassificationRewardModelTrainer:
             max_length=self.max_length,
             return_tensors=None,
         )
-        # Ensure labels are integers (0 or 1) for classification
-        tokenized["labels"] = [int(label) for label in examples["label"]]
+        # Convert binary labels (0, 1) to float scores for token classification
+        # This makes it verl-compatible (single scalar reward)
+        tokenized["labels"] = [float(label) for label in examples["label"]]
         return tokenized
 
     def compute_metrics(self, eval_pred):
-        """Comprehensive binary classification metrics"""
+        """Comprehensive binary classification metrics for verl-compatible model"""
         predictions, labels = eval_pred
 
-        # For binary classification, predictions are logits of shape [batch_size, 2]
-        # We take the softmax and use the probability of class 1
-        probs = F.softmax(torch.from_numpy(predictions), dim=-1)[:, 1].numpy()
+        # For verl-compatible model (num_labels=1), predictions are shape [batch_size, seq_len, 1]
+        # We take the last token's prediction (EOS token) and apply sigmoid
+        # Reshape: [batch_size, seq_len, 1] -> take last token -> [batch_size, 1] -> [batch_size]
+        if len(predictions.shape) == 3:
+            # Token classification output: [batch_size, seq_len, 1]
+            probs = torch.sigmoid(torch.from_numpy(predictions[:, -1, 0])).numpy()
+        else:
+            # Fallback for shape [batch_size, 1]
+            probs = torch.sigmoid(torch.from_numpy(predictions[:, 0])).numpy()
+        
         predicted_classes = (probs > 0.5).astype(int)
-
         labels = labels.astype(int)
 
         # Calculate comprehensive metrics
@@ -458,7 +486,8 @@ class BinaryClassificationRewardModelTrainer:
 
         # Create training accuracy callback
         training_callback = TrainingAccuracyCallback()
-        trainer = Trainer(
+        # Use custom trainer with BCE loss for binary classification
+        trainer = RewardModelTrainer(
             model=self.model,
             args=training_args,
             train_dataset=tokenized_datasets["train"],
@@ -509,9 +538,12 @@ class BinaryClassificationRewardModelTrainer:
                 "test": len(tokenized_datasets["test"]),
             },
             "model_config": {
-                "num_labels": 2,
+                "num_labels": 1,
                 "problem_type": "single_label_classification",
                 "max_length": self.max_length,
+                "output_type": "single_scalar_reward_per_token",
+                "loss_function": "binary_cross_entropy",
+                "verl_compatible": True,
             },
         }
 
