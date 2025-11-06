@@ -9,7 +9,7 @@ set -x
 # Paths
 TRAINED_RM_PATH="./feedback_qa_reward_model/final_model"
 DATA_DIR="$HOME/data/feedback_qa_ppo/case1_question_only"
-POLICY_MODEL=meta-llama/Llama-3.1-8B-Instruct"
+POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 
 # Training data (preprocessed with case1 script)
 TRAIN_DATA="$DATA_DIR/train.parquet"
@@ -31,7 +31,7 @@ fi
 echo "========================================="
 echo "PPO Training - Case 1: Question Only"
 echo "========================================="
-echo "Experiment: Baseline (no feedback examples)"
+echo "Experiment: Baseline - no feedback examples"
 echo "Input format: Question only"
 echo "RM scores: Question + Generated Answer"
 echo "========================================="
