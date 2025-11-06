@@ -15,7 +15,7 @@ POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 TRAIN_DATA="$DATA_DIR/train.parquet"
 VALID_DATA="$DATA_DIR/valid.parquet"
 
-huggingface-cli download sfairXC/FsfairX-LLaMA3-RM-v0.1 --local-dir $HOME/models/FsfairX-LLaMA3-RM-v0.1 &
+# huggingface-cli download sfairXC/FsfairX-LLaMA3-RM-v0.1 --local-dir $HOME/models/FsfairX-LLaMA3-RM-v0.1 &
 
 
 # Check if data exists
@@ -69,7 +69,7 @@ python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.param_offload=False \
     critic.model.fsdp_config.optimizer_offload=False \
     reward_model.enable=True \
-    reward_model.model.path="$HOME/models/FsfairX-LLaMA3-RM-v0.1" \
+    reward_model.model.path="$TRAINED_RM_PATH" \
     reward_model.model.input_tokenizer=null \
     reward_model.model.use_remove_padding=True \
     reward_model.model.fsdp_config.param_offload=True \
@@ -84,7 +84,7 @@ python3 -m verl.trainer.main_ppo \
     trainer.val_before_train=False \
     trainer.save_freq=5 \
     trainer.test_freq=2 \
-    trainer.total_epochs=1 $@
+    trainer.total_epochs=3 $@
 
 echo ""
 echo "========================================="
