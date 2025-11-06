@@ -7,13 +7,15 @@
 set -x
 
 # Paths
-TRAINED_RM_PATH="./feedback_qa_reward_model/final_model"
+# TRAINED_RM_PATH="./feedback_qa_reward_model/final_model"
 DATA_DIR="$HOME/data/feedback_qa_ppo/case2_with_feedback"
 POLICY_MODEL="meta-llama/Llama-3.1-8B-Instruct"
 
 # Training data (preprocessed with case2 script)
 TRAIN_DATA="$DATA_DIR/train.parquet"
 VALID_DATA="$DATA_DIR/valid.parquet"
+
+huggingface-cli download sfairXC/FsfairX-LLaMA3-RM-v0.1 --local-dir $HOME/models/FsfairX-LLaMA3-RM-v0.1 &
 
 # Check if data exists
 if [ ! -f "$TRAIN_DATA" ]; then
@@ -66,7 +68,7 @@ python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.param_offload=False \
     critic.model.fsdp_config.optimizer_offload=False \
     reward_model.enable=True \
-    reward_model.model.path="$TRAINED_RM_PATH" \
+    reward_model.model.path="$HOME/models/FsfairX-LLaMA3-RM-v0.1" \
     reward_model.model.input_tokenizer=null \
     reward_model.model.use_remove_padding=True \
     reward_model.model.fsdp_config.param_offload=True \
@@ -81,7 +83,7 @@ python3 -m verl.trainer.main_ppo \
     trainer.val_before_train=False \
     trainer.save_freq=5 \
     trainer.test_freq=2 \
-    trainer.total_epochs=10 $@
+    trainer.total_epochs=1 $@
 
 echo ""
 echo "========================================="
