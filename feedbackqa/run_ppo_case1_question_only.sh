@@ -72,7 +72,7 @@ python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.optimizer_offload=False \
     reward_model.enable=True \
     reward_model.model.path="$TRAINED_RM_PATH" \
-    reward_model.model.input_tokenizer=null \
+    reward_model.model.input_tokenizer="$POLICY_MODEL" \
     reward_model.model.use_remove_padding=True \
     reward_model.model.fsdp_config.param_offload=True \
     reward_model.micro_batch_size_per_gpu=16 \
