@@ -345,7 +345,7 @@ class BinaryClassificationRewardModelTrainer:
         # Convert continuous predictions to binary classes using threshold 0.0
         # (since we map labels to -1.0 and 1.0)
         predicted_classes = (predictions > 0.0).astype(int)
-        
+
         # Convert continuous labels back to binary (0, 1) for evaluation
         # Labels are in range [-1.0, 1.0], convert back to {0, 1}
         binary_labels = ((labels + 1.0) / 2.0).astype(int)
