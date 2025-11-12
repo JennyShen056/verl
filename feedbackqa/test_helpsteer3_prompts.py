@@ -98,7 +98,7 @@ def print_separator(title: str):
 def main():
     # Configuration
     MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
-    NUM_EXAMPLES = 3
+    NUM_EXAMPLES = 10
     SEED = 42
     
     random.seed(SEED)
