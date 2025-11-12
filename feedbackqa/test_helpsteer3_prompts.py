@@ -7,6 +7,7 @@ Uses meta-llama/Llama-3.1-8B-Instruct to generate responses.
 """
 
 import random
+from contextlib import redirect_stdout  # NEW
 from typing import Dict, List
 
 import torch
