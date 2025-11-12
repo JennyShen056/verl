@@ -4,7 +4,7 @@
 ================================================================================
 
 Loaded 38782 examples
-Selected examples at indices: [7296, 1639, 18024]
+Selected examples at indices: [7296, 1639, 18024, 16049, 14628, 9144, 6717, 35741, 5697, 38698]
 
 ================================================================================
   Loading Model and Tokenizer
@@ -15,7 +15,7 @@ Model loaded on device: cuda:0
 Model dtype: torch.bfloat16
 
 ================================================================================
-  Example 1/3 (Index: 7296)
+  Example 1/10 (Index: 7296)
 ================================================================================
 
 Domain: code
@@ -183,7 +183,7 @@ Case 2 length: 2139 chars
 
 
 ================================================================================
-  Example 2/3 (Index: 1639)
+  Example 2/10 (Index: 1639)
 ================================================================================
 
 Domain: code
@@ -292,23 +292,21 @@ While JIRA plugins are traditionally written in Java and utilize the Atlassian S
 
 **Understanding the Limitations**
 
-Before we dive into the implementation, it's essential to acknowledge that this approach is not a traditional JIRA plugin. A true JIRA plugin is a Java-based module that integrates directly with the JIRA platform, offering a seamless user experience. Python scripts, on the other hand, interact with JIRA's REST API to perform specific tasks.
+Before we dive into the implementation, it's essential to acknowledge that this approach is not a traditional JIRA plugin. A true JIRA plugin is a Java-based module that integrates seamlessly with the platform, offering a native experience. In contrast, a Python-based solution will be an external tool that interacts with JIRA's REST API, providing a more limited but still useful functionality.
 
 **Prerequisites**
 
-To create a Python-based tool that interacts with JIRA, ensure you have:
-
-1.  **JIRA Instance**: Access to a JIRA instance.
-2.  **Python**: Python installed on your system.
+1.  **JIRA Instance**: You need access to a JIRA instance.
+2.  **Python**: Ensure you have Python installed.
 3.  **Requests Library**: Install the `requests` library if you haven't already.
 
     ```bash
     pip install requests
     ```
 
-**Sample Python Script: Creating a JIRA Plugin**
+**Sample Python Script**
 
-Below is a simplified example of a Python script that interacts with JIRA's REST API to create an issue. This script serves as a starting point for creating a Python-based tool that can be used as an external plugin.
+Below is a simple Python script that interacts with JIRA's REST API to create an issue. This script will serve as a starting point for your external tool.
 
 ```python
 import requests
@@ -353,20 +351,25 @@ auth = HTTPBasicAuth(USERNAME, API_TOKEN)
 
 try:
     # Create the issue
-    response = requests.post(CREATE_ISSUE_URL, headers=headers, data=json.dumps(issue_data), auth
+    response = requests.post(CREATE_ISSUE_URL, headers=headers, data=json.dumps(issue_data), auth=auth)
+
+    # Check the response
+    response.raise_for_status()
+    print('Issue created successfully!')
+    print('
 
 ────────────────────────────────────────────────────────────────────────────────
 📊 COMPARISON
 ────────────────────────────────────────────────────────────────────────────────
 Case 1 length: 2067 chars
-Case 2 length: 2295 chars
+Case 2 length: 2316 chars
 ✓ Responses are different
 
 ================================================================================
 
 
 ================================================================================
-  Example 3/3 (Index: 18024)
+  Example 3/10 (Index: 18024)
 ================================================================================
 
 Domain: general
@@ -422,30 +425,939 @@ I can certainly help with many aspects of tutoring, but I'm an artificial intell
 **Where I can help:**
 
 1. **Explanations**: I can provide clear and detailed explanations of a wide range of topics, from basic concepts to advanced theories.
-
 2. **24/7 Availability**: I'm available round the clock to help with queries and provide instant feedback.
-
 3. **Practice Problems**: I can generate practice problems and provide solutions for many subjects.
-
 4. **Consistency**: I provide consistent and standardized information, without getting tired or distracted.
-
 5. **Personalized Learning**: I can adapt to a student's pace and style of learning, providing personalized assistance.
-
 6. **Vast Resources**: I have access to a vast amount of information, which I can draw upon to help with research and learning.
+7. **Flexible Pace**: I can adjust the learning pace to suit the individual student's needs.
 
-7. **Flexible Pace**: I can adjust the learning pace to suit the individual student's needs, ensuring they don't fall behind or get left behind.
+**Where I may fall short:**
 
-**Where I may not be the best fit:**
+1. I am not a substitute for human interaction, and I may not be able to provide the same level of empathy, personal connection, or nuanced feedback as a human tutor.
+2. While I can provide information, I lack real-world experience and personal anecdotes that can make learning more engaging and relatable.
+3. I should not be used for tasks that require a high level of security, ethical consideration, or subjective evaluation, such as grading or assessing complex tasks like essays or creative writing.
+4. My responses are generated based on patterns and data, and while I strive to be accurate, I am not perfect and may make mistakes. It's essential to verify information through multiple sources and conduct your own research.
 
-While I can provide many benefits as a learning tool, there are certain areas where human interaction is crucial. For instance, I may not be able to provide the same level of emotional support, empathy, or personalized feedback on complex tasks like essays or creative writing. Additionally, I should not be relied upon for tasks that require high-level security, such as grading or assessments.
-
-In conclusion, I can be a valuable supplement to a university student's learning experience, providing assistance with explanations, practice problems, and research. However, it's essential to recognize that I'm not a replacement for a human tutor. By using me as a tool in conjunction with a human tutor, students can take advantage of the benefits of both worlds and achieve their academic goals.
+In conclusion, I can be a helpful tool for learning and support, supplementing and enhancing the learning experience. However, it's essential to use me judiciously and in conjunction with other resources, such as human tutors or instructors, to get the most out of my abilities.
 
 ────────────────────────────────────────────────────────────────────────────────
 📊 COMPARISON
 ────────────────────────────────────────────────────────────────────────────────
 Case 1 length: 2635 chars
-Case 2 length: 1936 chars
+Case 2 length: 2084 chars
+✓ Responses are different
+
+================================================================================
+
+
+================================================================================
+  Example 4/10 (Index: 16049)
+================================================================================
+
+Domain: general
+Language: english
+Chosen response2 for Case 2
+
+--- Original Conversation ---
+User: Make 'Gentleman' stylish to use as pubg name. It should be readable though. Use symbols also
+
+Assistant: Here are some stylish PUBG names based on "Gentleman" using symbols:
+
+**Elegant & Classic:**
+
+*  Gentleman•
+* Ｇｅｎｔｌｅｍａｎ
+* gentiLeman
+*  Gentleman♠️
+* 🎩Gentleman
+
+**Edgy & Cool:**
+
+* Ģentleman
+* Ğentleman
+* Gentleman💀
+* Gentleman🔥
+* Gentleman⚔️
+
+**Unique & Playful:**
+
+* Gentl3man
+* G3ntleman
+* Gentleman⚡
+* Gentleman😎
+* Gentleman 💯
+
+**Tips for Choosing:**
+
+* **Availability:** Check if the...
+
+--- Chosen Previous Response (Response2) ---
+I'm glad you're enjoying the suggestions! Here are 50 more stylish "Gentleman" PUBG names, mixing different themes, fonts, and wordplay:
+
+**Classy & Elegant:**
+
+* Gentleman_Elegance
+* NobleGentleman
+* Gentleman_Chivalry
+* AristocratGentleman
+* Gentleman_Finest
+
+**Nature & Wildlife:**
+
+* Gentleman_Ly...
+
+--- Feedback on Previous Response ---
+- The response is partially helpful. It attempts to follow the instructions of the prompt, but misses one key requirement - it does not provide a total of 50 names. Also, there are issues with the text structure - the words are not listed in a numbered list format, that would make the response more ...
+
+────────────────────────────────────────────────────────────────────────────────
+🤖 CASE 1: Question Only (Baseline)
+────────────────────────────────────────────────────────────────────────────────
+Here are 50 PUBG name ideas based on "Gentleman" with a mix of styles:
+
+**Elegant & Classic:**
+
+1. Gentleman•
+2. Ｇｅｎｔｌｅｍａｎ
+3. gentiLeman
+4.  Gentleman♠️
+5. 🎩Gentleman
+6. GENTLEMAN
+7. TheGentleman
+8. GentlemanE
+9. G-Man
+10. Gentlemanly
+
+**Edgy & Cool:**
+
+11. Ģentleman
+12. Ğentleman
+13. Gentleman💀
+14. Gentleman🔥
+15. Gentleman⚔️
+16. Gentl3man
+17. G3ntleman
+18. Gentleman⚡
+19. Gentleman😎
+20. Gentleman 💯
+
+**Unique & Playful:**
+
+21. Gentl3manly
+22. Sir_Shootsalot
+23. The_Etiquette
+24. Dapper_Deadeye
+25. Polite_Predator
+26. Gentlemango
+27. GentlemanJr
+28. GentlemanXL
+29. GentlemanX
+30. Gentleman_G
+
+**Mysterious & Intriguing:**
+
+31. ShadowGentleman
+32. GentlemanX
+33. SilentGentleman
+34. GentlemanEnigma
+35. TheGentlemanX
+36. GentlemanMystery
+37. GentlemanSecret
+38. GentlemanWhisper
+39. GentlemanStealth
+40. GentlemanShade
+
+**Bold & Intimidating:**
+
+41. Gentleman_Fury
+42. IronGentleman
+43. Gentleman_Dominion
+44. Gentleman_Reign
+45. Gentleman_Warlord
+46. Gentleman_Blood
+47. Gentleman_Rage
+48. Gentleman_Brawl
+49. Gentleman_Fighter
+50. Gentleman_Warrior
+
+**Tips:**
+
+* Check availability in PUBG.
+* Consider your playstyle and personality.
+* Keep it concise and memorable.
+
+Good luck finding the perfect stylish "Gentleman" PUBG name!
+
+────────────────────────────────────────────────────────────────────────────────
+🎓 CASE 2: With Previous Response + Feedback
+────────────────────────────────────────────────────────────────────────────────
+Here are 50 stylish PUBG names based on "Gentleman" using symbols:
+
+1. Gentleman•
+2. Ｇｅｎｔｌｅｍａｎ
+3. gentiLeman
+4. Gentleman♠️
+5. 🎩Gentleman
+6. Ģentleman
+7. Ğentleman
+8. Gentleman💀
+9. Gentleman🔥
+10. Gentleman⚔️
+11. Gentl3man
+12. G3ntleman
+13. Gentleman⚡
+14. Gentleman😎
+15. Gentleman 💯
+16. Gentl3manly
+17. Sir_Shootsalot
+18. The_Etiquette
+19. Dapper_Deadeye
+20. Polite_Predator
+21. TheGentleman
+22. ShadowGentleman
+23. GentlemanX
+24. SilentGentleman
+25. GentlemanEnigma
+26. Gentleman_Fury
+27. IronGentleman
+28. Gentleman_Dominion
+29. Gentleman_Reign
+30. Gentleman_Warlord
+31. RageGentleman
+32. Gentleman_Noob
+33. AccidentalGentleman
+34. Gentlemanly_Chaos
+35. Gentlemanly_Grenade
+36. Ｇｅｎｔｌｅｍａｎ⚔️
+37. 🎩GΞNTLΞMΛN🎩
+38.  Gentleman⚡💀
+39. Ģentleman🔥
+40. Ğentleman💯
+41. Gentlem4n
+42. G3ntl3man
+43. Gentlem4nly
+44. Gentleman_Snipe
+45. Gentleman_Rogue
+46. Gentleman_Bard
+47. Gentleman_Scribe
+48. Gentleman_Mystic
+49. Gentleman_Guard
+50. Gentleman_Commander
+
+────────────────────────────────────────────────────────────────────────────────
+📊 COMPARISON
+────────────────────────────────────────────────────────────────────────────────
+Case 1 length: 1234 chars
+Case 2 length: 942 chars
+✓ Responses are different
+
+================================================================================
+
+
+================================================================================
+  Example 5/10 (Index: 14628)
+================================================================================
+
+Domain: general
+Language: english
+Chosen response1 for Case 2
+
+--- Original Conversation ---
+User: fix mistakes in the following text: Naturally it was a bad idea to use words associated with death, considering they’d go into battle soon. Although it might be mere consolidation, some of the soldiers would certainly feel like clinging on to the faint hope entailed by the encampment.
+
+--- Chosen Previous Response (Response1) ---
+Here's the corrected version of your text:
+
+"Naturally, it was a bad idea to use words associated with death, considering they would soon go into battle. Although it might be mere consolation, some of the soldiers would certainly feel like clinging on to the faint hope entailed by the encampment."
+
+...
+
+--- Feedback on Previous Response ---
+- The response is mostly helpful. In the last sentence, the word entailed does not fit the context of the rest of the language used. If a different word was used it would fit the paragraph better. Other than this, the response is good, clear, and easy to understand. The response answers the prompt c...
+
+────────────────────────────────────────────────────────────────────────────────
+🤖 CASE 1: Question Only (Baseline)
+────────────────────────────────────────────────────────────────────────────────
+Here's the corrected text:
+
+Naturally, it was a bad idea to use words associated with death, considering they would be going into battle soon. Although it might be mere consolidation, some of the soldiers would certainly feel like clinging to the faint hope offered by the encampment.
+
+I made the following changes:
+
+- Added a comma after "Naturally" to improve sentence structure and clarity.
+- Changed "would go" to "would be going" to make the verb tense consistent and more precise.
+- Changed "entailed by" to "offered by" to use a more suitable preposition in this context, as "entailed" is typically used to indicate a logical or necessary consequence, whereas "offered" implies a more direct benefit or provision.
+
+────────────────────────────────────────────────────────────────────────────────
+🎓 CASE 2: With Previous Response + Feedback
+────────────────────────────────────────────────────────────────────────────────
+Here's the corrected version of your text:
+
+"Naturally, it was a bad idea to use words associated with death, considering they would go into battle soon. Although it might be mere consolation, some of the soldiers would certainly feel like clinging on to the faint hope offered by the encampment."
+
+Here are the corrections I made:
+
+1.  Added a comma after "Naturally" to separate the two independent clauses and improve sentence structure.
+2.  Changed "they'd" to "they would" for consistency in tone.
+3.  Changed "mere consolidation" to "mere consolation" as "consolation" means to provide comfort or solace, which seems to be the intended meaning here.
+4.  Changed "entailed" to "offered" as it fits the context of the paragraph better, implying that the encampment provides a source of hope for the soldiers.
+
+────────────────────────────────────────────────────────────────────────────────
+📊 COMPARISON
+────────────────────────────────────────────────────────────────────────────────
+Case 1 length: 720 chars
+Case 2 length: 812 chars
+✓ Responses are different
+
+================================================================================
+
+
+================================================================================
+  Example 6/10 (Index: 9144)
+================================================================================
+
+Domain: general
+Language: english
+Chosen response1 for Case 2
+
+--- Original Conversation ---
+User: Make an etsy listing description for a 40 page minimalist digital print planner that you download and print
+
+Assistant: Introducing our sleek and stylish 40-page Minimalist Digital Print Planner, designed to help you stay organized and focused on your goals! This downloadable and printable planner is the perfect tool for those who appreciate simplicity, functionality, and eco-friendliness.
+
+**Product Details:**
+
+* 40 high-quality, minimalist pages in a clean and modern design
+* Instant dig...
+
+--- Chosen Previous Response (Response1) ---
+Introducing our 40-page Minimalist Digital Print Fitness Planner, designed to help you stay on track with your health and fitness goals! This downloadable and printable planner is the perfect tool for those who appreciate simplicity, functionality, and eco-friendliness in their fitness journey.
+
+**P...
+
+--- Feedback on Previous Response ---
+- The response is perfectly helpful. The user asks the model to generate an etsy listing description. The model successfully generates an accurate product description. It remains concise and incorporates elements of a product description, such as the product details, key features, how to use. and es...
+
+────────────────────────────────────────────────────────────────────────────────
+🤖 CASE 1: Question Only (Baseline)
+────────────────────────────────────────────────────────────────────────────────
+**Digital Download: Minimalist Fitness Planner**
+
+**Stay Focused on Your Fitness Goals with Our Simple and Effective Planner**
+
+Get fit, feel great, and crush your goals with our 40-page Minimalist Fitness Planner! This digital download is perfect for anyone looking for a clean and uncluttered way to track their workouts, meals, and progress.
+
+**What's Included:**
+
+* 40 high-quality, printable pages in a modern design
+* Instant digital download in PDF format
+* A4 and US Letter sizes included for your convenience
+* Undated layout, so you can start using it at any time of the year
+* Sections include:
+	+ Fitness Goal Setting
+	+ Workout Tracking (5-day and weekly spreads)
+	+ Meal Planning (7-day and daily spreads)
+	+ Progress Tracking (weight, measurements, and progress photos)
+	+ Notes and Reflections
+
+**Key Features:**
+
+* **Customizable:** Tailor this planner to your fitness journey with our undated layout and add your own notes, stickers, or washi tape.
+* **Eco-Friendly:** Reduce your carbon footprint by printing only the pages you need and using a digital download.
+* **Versatile:** Accommodate various fitness goals and routines with our flexible layout and templates.
+* **Private and Secure:** Receive your digital download instantly via email, with no shipping or handling required.
+
+**How to Use:**
+
+1. Purchase and download the planner in PDF format.
+2. Print the pages you need, either at home or at a local print shop.
+3. Punch holes in the pages and insert them into a binder or use a disc-bound system.
+4. Start tracking your fitness journey with ease and style!
+
+**Technical Details:**
+
+* Instant digital download
+* PDF format
+* A4 and US Letter sizes included
+* 40 pages in total
+
+**Please Note:**
+
+* This is a digital product, and no physical item will be shipped.
+* Colors may vary slightly depending on your monitor and printer settings.
+* Due to the digital nature of this product, all sales are final. No refunds or exchanges will be provided.
+
+**Get Fit, Feel Great, and Crush Your Goals with Our Minimalist Fitness Planner!**
+
+────────────────────────────────────────────────────────────────────────────────
+🎓 CASE 2: With Previous Response + Feedback
+────────────────────────────────────────────────────────────────────────────────
+Introducing our 40-page Minimalist Digital Print Fitness Planner, designed to help you stay on track with your health and fitness goals! This downloadable and printable planner is the perfect tool for those who appreciate simplicity, functionality, and eco-friendliness in their fitness journey.
+
+**Product Details:**
+
+* 40 high-quality, minimalist pages in a clean and modern design
+* Instant digital download in PDF format, allowing you to print at home or at your local print shop
+* A4 and US Letter sizes included for your convenience
+* Undated layout, so you can start using it at any time of the year
+* Sections include: fitness goal setting, workout tracking, meal planning, progress tracking, and notes
+
+**Key Features:**
+
+1. **Minimalist Design:** Our fitness planner features a clean and uncluttered layout, ensuring that you can focus on your fitness goals without distractions. The minimalist aesthetic is both timeless and versatile, making it suitable for any fitness enthusiast.
+
+2. **Customizable:** With its undated layout, you have the freedom to tailor this planner to your unique fitness journey. Start using it whenever you're ready, and customize it with your favorite pens, stickers, or washi tape.
+
+3. **Eco-Friendly:** By choosing a digital download, you're reducing your carbon footprint and contributing to a more sustainable future. Print only the pages you need, and enjoy the convenience of having your fitness planner at your fingertips without the waste.
+
+4. **Versatile:** Our fitness planner is designed to accommodate various fitness goals and routines. Whether you're focusing on strength training, cardio, or flexibility, this planner has you covered. Plus, the meal planning and progress tracking sections help you maintain a balanced and healthy lifestyle.
+
+5. **Secure and Private:** Since this is a digital download, you can rest assured that your personal information remains private. No need to worry about shipping or handling, as you'll receive your planner instantly via email.
+
+**How to Use:**
+
+1. Purchase and download the fitness planner in PDF format.
+2. Print the pages you need, either at home or at a local print shop.
+3. Punch holes in the pages and insert them into a binder or use a disc-bound system.
+4. Start tracking your workouts, meals, and progress with ease and style!
+
+**Please Note:**
+
+* This is a digital product, and no physical item will be shipped.
+* Colors may vary slightly depending on your monitor and printer settings.
+* Due to the digital nature of this
+
+────────────────────────────────────────────────────────────────────────────────
+📊 COMPARISON
+────────────────────────────────────────────────────────────────────────────────
+Case 1 length: 2059 chars
+Case 2 length: 2528 chars
+✓ Responses are different
+
+================================================================================
+
+
+================================================================================
+  Example 7/10 (Index: 6717)
+================================================================================
+
+Domain: code
+Language: python
+Chosen response2 for Case 2
+
+--- Original Conversation ---
+User: We have a CSV file with a structure like: DATE, COLUMN1, COLUMN2, COLUMN3. Suggest a python script to split the file into multiple CSV files by date. Output file names should have the date in them and their structure should be: COLUMN1, COLUMN2, COLUMN3
+
+Assistant: To split a CSV file by date and output multiple CSV files with the date in their names, you can use Python with the `pandas` library, which is great for handling CSV files. If you don't have `pandas` installed, you can install i...
+
+--- Chosen Previous Response (Response2) ---
+Certainly! Here's the updated script that takes command line parameters for the input file name, writes the output to a subfolder named after the input filename, and includes an optional parameter to specify the exact name of the date column:
+
+```python
+import pandas as pd
+import os
+import sys
+from ...
+
+--- Feedback on Previous Response ---
+- The response is slightly helpful. While the code and explanation are well-structured, the script fails to run, making it impractical for real-world use. The main issue lies in using the deprecated `DataFrame.append()`, which prevents the script from functioning as intended. Additionally, it doesn'...
+
+────────────────────────────────────────────────────────────────────────────────
+🤖 CASE 1: Question Only (Baseline)
+────────────────────────────────────────────────────────────────────────────────
+Here's the updated script that takes the input file name and output folder as command line parameters, writes the output to a subfolder named after the input filename, and allows for an optional parameter to specify the exact name of the date column:
+
+```python
+import pandas as pd
+import os
+import sys
+from datetime import datetime
+
+# Check if the required command line arguments are provided
+if len(sys.argv) < 3:
+    print("Usage: python script.py <input_file> <date_column> [output_folder]")
+    sys.exit(1)
+
+input_file = sys.argv[1]
+date_column = sys.argv[2]
+output_folder = 'output'
+
+# Check if the output folder parameter is provided
+if len(sys.argv) > 3:
+    output_folder = sys.argv[3]
+
+# Create the output folder if it doesn't exist
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+
+# Define the input file path
+input_file_path = os.path.join(os.getcwd(), input_file)
+
+# Read the CSV file
+try:
+    df = pd.read_csv(input_file_path)
+except FileNotFoundError:
+    print(f"Error: Input file '{input_file}' not found.")
+    sys.exit(1)
+
+# Ensure the date column is in datetime format
+df[date_column] = pd.to_datetime(df[date_column], format='%d/%m/%Y')
+
+# Create a new DataFrame to store the output files
+output_dfs = pd.DataFrame()
+
+# Iterate over each unique date
+for date in df[date_column].unique():
+    # Filter rows by date
+    date_df = df[df[date_column] == date]
+    
+    # Define the output file name with the date value in 'yyyymmdd' format
+    output_file_name = f"{input_file.split('.')[0]}_{date.strftime('%Y%m%d')}.csv"
+    output_file_path = os.path.join(output_folder, output_file_name)
+    
+    # Append the filtered data to the output DataFrame
+    output_dfs = output_dfs.append(date_df, ignore_index=True)
+
+# Write the output DataFrame to a new CSV file
+output_dfs.to_csv(output_file_path, index=False)
+
+print(f"CSV files have been split by date and combined into a single file with dates in 'yyyymmdd' format in '{output_folder}' folder.")
+```
+
+This script does the following:
+1. Checks if the required command line arguments are provided.
+2. Reads the input file path and date column name from the command line arguments.
+
+────────────────────────────────────────────────────────────────────────────────
+🎓 CASE 2: With Previous Response + Feedback
+────────────────────────────────────────────────────────────────────────────────
+Here's a revised version of the script that takes command line parameters for the input file name and writes the output to a subfolder named after the input filename, with an additional optional parameter to specify the exact name of the date column:
+
+```python
+import pandas as pd
+import os
+import sys
+from datetime import datetime
+
+# Check if the correct number of arguments are provided
+if len(sys.argv) < 3:
+    print("Usage: python script.py input_file_name date_column_name")
+    sys.exit(1)
+
+# Get the input file name and date column name from command line arguments
+input_file = sys.argv[1]
+date_column = sys.argv[2]
+
+# Define the input and output folder paths
+input_folder = 'input'
+output_folder = os.path.join(input_folder, os.path.splitext(input_file)[0])
+
+# Read the CSV file
+df = pd.read_csv(os.path.join(input_folder, input_file))
+
+# Ensure the date column is in datetime format
+df[date_column] = pd.to_datetime(df[date_column], format='%d/%m/%Y')
+
+# Create a list to store the filtered DataFrames
+output_dfs = []
+
+# Iterate over each unique date
+for date in df[date_column].unique():
+    # Filter rows by date
+    date_df = df[df[date_column] == date]
+    
+    # Define the output file name with the date value in 'yyyymmdd' format
+    output_file = os.path.join(output_folder, f"{date.strftime('%Y%m%d')}.csv")
+    
+    # Append the filtered data to the list of output DataFrames
+    output_dfs.append(date_df)
+    
+    # Write the filtered data to a new CSV file
+    date_df.to_csv(output_file, index=False)
+
+# Concatenate the output DataFrames
+output_df = pd.concat(output_dfs, ignore_index=True)
+
+# Write the combined output DataFrame to a new CSV file
+output_file = os.path.join(output_folder, f"{os.path.splitext(input_file)[0]}_output.csv")
+output_df.to_csv(output_file, index=False)
+
+print(f"CSV files have been split by date and combined into a single file with dates in 'yyyymmdd' format in the '{output_folder}' folder.")
+```
+
+This revised script does the following:
+1. Checks if the correct number of arguments are provided.
+2. Gets the input file name and date column name from the command line arguments.
+3. Defines the input and output folder paths.
+4. Reads the input
+
+────────────────────────────────────────────────────────────────────────────────
+📊 COMPARISON
+────────────────────────────────────────────────────────────────────────────────
+Case 1 length: 2170 chars
+Case 2 length: 2199 chars
+✓ Responses are different
+
+================================================================================
+
+
+================================================================================
+  Example 8/10 (Index: 35741)
+================================================================================
+
+Domain: multilingual
+Language: french
+Chosen response2 for Case 2
+
+--- Original Conversation ---
+User: Voici des types de mail en exemple : 
+"Bonjour + Prénom,	
+	
+Merci d’avoir créé un compte Prime Éco-Travaux Carrefour. 	
+	
+Votre inscription, réalisée le 12/09/2022, a bien été prise en compte. 	
+Une précision importante concernant votre projet : la date de votre devis travaux ne doit pas être antérieure à cette date."
+
+Répond juste par "ok"
+
+Assistant: D'accord, j'ai compris l'exemple de type de courriel que vous avez fourni. Si vous avez d'autres questions ou si vous avez besoin d'aide po...
+
+--- Chosen Previous Response (Response2) ---
+D'accord, j'ai compris l'exemple de type de courriel que vous avez fourni. Si vous avez d'autres questions ou si vous avez besoin d'aide pour autre chose, n'hésitez pas à demander.
+
+--- Feedback on Previous Response ---
+- The response is partially helpful because it confirms understanding of the email example and offers further assistance if needed. However, it lacks a specific example of an email related to the Prime Éco-Travaux, which would have made it more useful. Providing a complete response that includes a r...
+
+────────────────────────────────────────────────────────────────────────────────
+🤖 CASE 1: Question Only (Baseline)
+────────────────────────────────────────────────────────────────────────────────
+D'accord, j'ai compris l'exemple de type de courriel que vous avez fourni.
+
+────────────────────────────────────────────────────────────────────────────────
+🎓 CASE 2: With Previous Response + Feedback
+────────────────────────────────────────────────────────────────────────────────
+Conversation:
+User: Voici des types de mail en exemple : 
+"Bonjour + Prénom,	
+	
+Merci d’avoir créé un compte Prime Éco-Travaux Carrefour. 	
+	
+Votre inscription, réalisée le 12/09/2022, a bien été prise en compte. 	
+Une précision importante concernant votre projet : la date de votre devis travaux ne doit pas être antérieure à cette date."
+
+Répond juste par "ok"
+
+Assistant: D'accord, j'ai compris l'exemple de type de courriel que vous avez fourni. Si vous avez d'autres questions ou si vous avez besoin d'aide pour autre chose, n'hésitez pas à demander.
+
+User: Un autre exemple de mail :
+Bonjour + Prénom,
+
+Merci d'avoir créé le dossier Prime Éco-Travaux Carrefour n° [numéro de dossier] pour votre projet [type_travaux].
+Pour bénéficier de votre prime, estimée à [montant prime] €(1), vous pouvez dès à présent télécharger et imprimer votre attestation sur l'honneur en vous connectant à votre espace client, rubrique Mes travaux :
+[CTA J'accède à mes travaux > redirection vers la page de connexion si pas connecté puis l'écran NG "EC3" Mes travaux > Dossiers / sur cette page directement si connecté]
+
+Assistant: D'accord, j'ai compris l'exemple de type de courriel que vous avez fourni. Si vous avez d'autres questions ou si vous avez besoin d'aide pour autre chose, n'hésitez pas à demander.
+
+User: Un autre exemple de mail : 
+Bonjour + Prénom,
+
+Vous avez créé le dossier Prime Éco-Travaux Carrefour n° [numéro de dossier] pour votre projet [type_travaux] (ex. : Isolation).
+
+Après examen de celui-ci, nous ne sommes malheureusement pas en mesure de répondre favorablement à votre demande de prime pour le motif suivant : 
+[motif_refus_dossier]
+
+Assistant: D'accord, j'ai compris l'exemple de type de courriel que vous avez fourni. Pour compléter ces exemples, voici une autre possibilité d'e-mail d'acceptation de prime : 
+
+Bonjour + Prénom,
+
+Nous sommes ravis de vous informer que votre dossier Prime É
+
+────────────────────────────────────────────────────────────────────────────────
+📊 COMPARISON
+────────────────────────────────────────────────────────────────────────────────
+Case 1 length: 74 chars
+Case 2 length: 1911 chars
+✓ Responses are different
+
+================================================================================
+
+
+================================================================================
+  Example 9/10 (Index: 5697)
+================================================================================
+
+Domain: code
+Language: php
+Chosen response1 for Case 2
+
+--- Original Conversation ---
+User: Write a PHP script to post a call to a contact record in close.io
+
+Assistant: To post a call to a contact record in Close.io using PHP, you'll need to use the Close.io API. First, make sure you have your Close.io API key. If you don't have one, you can generate it in your Close.io account settings.
+
+Here's a sample PHP script that demonstrates how to post a call to a contact record in Close.io:
+
+```php
+<?php
+
+// Replace with your Close.io API key
+$apiKey = 'your_close_io_api_key';
+
+// Repl...
+
+--- Chosen Previous Response (Response1) ---
+To get a direct link to a contact page in Close.io using the contact ID, you can construct the URL using the contact ID. Here's a sample PHP script to get the direct link to a contact page in Close.io using the contact ID:
+
+```php
+<?php
+
+// Replace with the contact ID you want to get the link for
+$c...
+
+--- Feedback on Previous Response ---
+- The response is perfectly helpful. It provides users with a clear and simple solution on how to obtain a direct link to a contact page in close.io using the contact ID.
+The response does not involve unnecessary complexity, external libraries, or API calls which are not required. The solution is co...
+
+────────────────────────────────────────────────────────────────────────────────
+🤖 CASE 1: Question Only (Baseline)
+────────────────────────────────────────────────────────────────────────────────
+To get a direct link to a contact page in Close.io using the contact ID, you can construct the link by concatenating the base URL of Close.io's contact page with the contact ID. Here's a sample PHP script:
+
+```php
+<?php
+
+require'vendor/autoload.php';
+
+// Replace with your Close.io account domain
+$domain = 'your_close_io_domain'; // e.g., example.close.io
+
+// Replace with the contact ID
+$contactId = 'contact_id_here';
+
+// Construct the contact link
+$contactLink = 'https://'. $domain. '/contact/'. $contactId;
+
+echo "Contact link: ". $contactLink;
+
+?>
+```
+
+Replace `'your_close_io_domain'` with your actual Close.io account domain (e.g., `example.close.io`), and `'contact_id_here'` with the contact ID you want to link to.
+
+The resulting `$contactLink` variable will contain the direct link to the contact page in Close.io.
+
+Alternatively, if you're using the Close.io API, you can use the `GET /contact/{id}` endpoint to retrieve the contact details, which will include the link to the contact page. Here's an example using Guzzle:
+
+```php
+<?php
+
+require'vendor/autoload.php';
+
+use GuzzleHttp\Client;
+
+// Replace with your Close.io API key
+$apiKey = 'your_close_io_api_key';
+
+// Replace with the contact ID
+$contactId = 'contact_id_here';
+
+// Initialize Guzzle client
+$client = new Client([
+    'base_uri' => 'https://api.close.com/api/v1/',
+]);
+
+try {
+    // Send a GET request to Close.io API to retrieve the contact
+    $response = $client->get('contact/'. $contactId, [
+        'headers' => [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer '. $apiKey,
+            'Accept' => 'application/json',
+        ],
+    ]);
+
+    // Decode the response
+    $decodedResponse = json_decode($response->getBody(), true);
+
+    // Get the contact link from the response
+    $contactLink = $decodedResponse['data']['link'];
+
+    echo "Contact link: ". $contactLink;
+} catch (\GuzzleHttp\Exception\RequestException $e) {
+    echo "Error retrieving contact link: ". $e->getMessage();
+}
+
+?>
+```
+
+Replace `'your_close_io_api_key'` with your actual API key, and `'contact_id_here'` with the
+
+────────────────────────────────────────────────────────────────────────────────
+🎓 CASE 2: With Previous Response + Feedback
+────────────────────────────────────────────────────────────────────────────────
+To get a direct link to a contact page in Close.io using the contact ID, you can construct the URL using the contact ID. Here's a sample PHP script to get the direct link to a contact page in Close.io using the contact ID:
+
+```php
+<?php
+
+// Replace with the contact ID you want to get the link for
+$contactId = 'contact_id_here';
+
+// Construct the URL for the contact page
+$contactPageUrl = 'https://app.close.com/contact/'. $contactId;
+
+// Display the direct link to the contact page
+echo "Direct link to contact page: ". $contactPageUrl;
+
+?>
+```
+
+Replace `'contact_id_here'` with the actual contact ID.
+
+After running the script, it will display the direct link to the contact page in Close.io using the contact ID.
+
+────────────────────────────────────────────────────────────────────────────────
+📊 COMPARISON
+────────────────────────────────────────────────────────────────────────────────
+Case 1 length: 2119 chars
+Case 2 length: 717 chars
+✓ Responses are different
+
+================================================================================
+
+
+================================================================================
+  Example 10/10 (Index: 38698)
+================================================================================
+
+Domain: multilingual
+Language: spanish
+Chosen response2 for Case 2
+
+--- Original Conversation ---
+User: Dame una lista de keywords para posicionar una Agencia de Markketing Digital especialista en Amazon
+
+Assistant: 1. Agencia de Marketing Digital
+2. Especialista en Amazon
+3. Servicios de Marketing en Amazon
+4. Optimización de Listados en Amazon
+5. Gestión de Campañas Publicitarias en Amazon
+6. Análisis de Competencia en Amazon
+7. Estrategias de Marketing en Amazon
+8. Agencia de Marketing en Amazon
+9. Servicios de Marketing Digital para Amazon
+10. Agencia de Marketing Digital para Amazon
+11....
+
+--- Chosen Previous Response (Response2) ---
+1. Espirulina Premium
+2. Marca de Espirulina de Calidad
+3. Espirulina Orgánica
+4. Espirulina 100% Pura
+5. Espirulina sin Aditivos
+6. Espirulina Vegana
+7. Espirulina sin Gluten
+8. Espirulina sin Lactosa
+9. Espirulina sin Soja
+10. Espirulina sin OGM
+11. Espirulina sin Alérgenos
+12. Espirulina sin Cons...
+
+--- Feedback on Previous Response ---
+- The response is slightly helpful as it contains a few useful keywords at the beginning, and then the model starts hallucinating by adding products that spirulina does not contain until it gets to "Espirulina sin Productos Químicos de Limpieza Industrial". Which is nonsensical as it translates to S...
+
+────────────────────────────────────────────────────────────────────────────────
+🤖 CASE 1: Question Only (Baseline)
+────────────────────────────────────────────────────────────────────────────────
+Aquí te dejo una lista de keywords para posicionar una marca premium de espirulina en Amazon:
+
+**Palabras clave generales**
+
+1. Espirulina
+2. Suplemento de espirulina
+3. Alga verde
+4. Suplemento de algas
+5. Nutrición saludable
+6. Bienestar integral
+7. Suplemento de hierbas
+8. Suplemento de plantas
+9. Suplemento de nutrientes
+10. Suplemento de vitaminas
+
+**Palabras clave relacionadas con la espirulina**
+
+1. Espirulina de alta calidad
+2. Espirulina orgánica
+3. Espirulina sin pesticidas
+4. Espirulina sin aditivos
+5. Espirulina rica en proteínas
+6. Espirulina rica en vitaminas
+7. Espirulina rica en minerales
+8. Espirulina para la salud del corazón
+9. Espirulina para la salud del cerebro
+10. Espirulina para la energía
+
+**Palabras clave relacionadas con la salud y el bienestar**
+
+1. Suplemento para la salud del corazón
+2. Suplemento para la salud del cerebro
+3. Suplemento para la energía
+4. Suplemento para la pérdida de peso
+5. Suplemento para la salud de la piel
+6. Suplemento para la salud de los huesos
+7. Suplemento para la salud de la digestión
+8. Suplemento para la salud inmunológica
+9. Suplemento para la salud del sistema nervioso
+10. Suplemento para la salud general
+
+**Palabras clave relacionadas con la marca**
+
+1. Marca de espirulina premium
+2. Marca de suplementos de alta calidad
+3. Marca de productos naturales
+4. Marca de productos orgánicos
+5. Marca de productos sin pesticidas
+6. Marca de productos sin aditivos
+7. Marca de productos ricos en nutrientes
+8. Marca de productos ricos en vitaminas
+9. Marca de productos ricos en minerales
+10. Marca de productos para la salud y el bienestar
+
+**Palabras clave relacionadas con la presentación y el env
+
+────────────────────────────────────────────────────────────────────────────────
+🎓 CASE 2: With Previous Response + Feedback
+────────────────────────────────────────────────────────────────────────────────
+Aquí te presento una lista de keywords más adecuada para posicionar una marca premium de espirulina en Amazon:
+
+1. Espirulina Premium
+2. Marca de Espirulina de Calidad
+3. Espirulina Orgánica
+4. Espirulina 100% Pura
+5. Espirulina sin Aditivos
+6. Espirulina Vegana
+7. Espirulina sin Gluten
+8. Espirulina con Alta Concentración de Algalina
+9. Espirulina con Alto Valor Nutricional
+10. Espirulina para Salud y Bienestar
+11. Espirulina para Nutrición y Suplementación
+12. Espirulina para Fitness y Deporte
+13. Espirulina para Veganos y Vegetarianos
+14. Espirulina con Certificación de Calidad
+15. Espirulina Proveniente de Fuentes Sostenibles
+16. Espirulina con Técnicas de Producción Avanzadas
+17. Espirulina con Control de Calidad Riguroso
+18. Espirulina con Garantía de Satisfacción
+19. Espirulina con Servicio de Soporte al Cliente
+20. Espirulina con Garantía de Reembolso
+
+Recuerda que es importante investigar y verificar la relevancia y la demanda de cada keyword en Amazon antes de incluirlos en tu estrategia de marketing.
+
+────────────────────────────────────────────────────────────────────────────────
+📊 COMPARISON
+────────────────────────────────────────────────────────────────────────────────
+Case 1 length: 1674 chars
+Case 2 length: 1026 chars
 ✓ Responses are different
 
 ================================================================================
@@ -455,7 +1367,7 @@ Case 2 length: 1936 chars
   Testing Complete
 ================================================================================
 
-Processed 3 examples
+Processed 10 examples
 
 Observations to look for:
 1. Does Case 2 produce higher quality responses?
