@@ -208,5 +208,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-
+    with open("helpsteer3_results.txt", "w", encoding="utf8") as f:
+        with redirect_stdout(f):
+            main()
