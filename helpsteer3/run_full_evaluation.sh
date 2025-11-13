@@ -42,51 +42,51 @@ echo ""
 
 mkdir -p "$OUTPUT_DIR"
 
-# Step 1: Merge Case 1 checkpoint
-echo "Step 1/7: Merging Case 1 checkpoint..."
-echo "======================================="
-bash helpsteer3/merge_checkpoint.sh "$CASE1_NAME" "$CASE1_GLOBAL_STEP"
-echo ""
+# # Step 1: Merge Case 1 checkpoint
+# echo "Step 1/7: Merging Case 1 checkpoint..."
+# echo "======================================="
+# bash helpsteer3/merge_checkpoint.sh "$CASE1_NAME" "$CASE1_GLOBAL_STEP"
+# echo ""
 
-# Step 2: Merge Case 2 checkpoint
-echo "Step 2/7: Merging Case 2 checkpoint..."
-echo "======================================="
-bash helpsteer3/merge_checkpoint.sh "$CASE2_NAME" "$CASE2_GLOBAL_STEP"
-echo ""
+# # Step 2: Merge Case 2 checkpoint
+# echo "Step 2/7: Merging Case 2 checkpoint..."
+# echo "======================================="
+# bash helpsteer3/merge_checkpoint.sh "$CASE2_NAME" "$CASE2_GLOBAL_STEP"
+# echo ""
 
-# Paths to merged models
-CASE1_MODEL="checkpoints/helpsteer3_ppo_experiment/${CASE1_NAME}/global_step_${CASE1_GLOBAL_STEP}/actor/huggingface"
-CASE2_MODEL="checkpoints/helpsteer3_ppo_experiment/${CASE2_NAME}/global_step_${CASE2_GLOBAL_STEP}/actor/huggingface"
+# # Paths to merged models
+# CASE1_MODEL="checkpoints/helpsteer3_ppo_experiment/${CASE1_NAME}/global_step_${CASE1_GLOBAL_STEP}/actor/huggingface"
+# CASE2_MODEL="checkpoints/helpsteer3_ppo_experiment/${CASE2_NAME}/global_step_${CASE2_GLOBAL_STEP}/actor/huggingface"
 
-# Step 3: Run inference on Case 1
-echo "Step 3/7: Running inference for Case 1..."
-echo "=========================================="
-echo "Test size: $TEST_SIZE samples"
-python helpsteer3/inference.py \
-    --model_path "$CASE1_MODEL" \
-    --output_file "$OUTPUT_DIR/case1_predictions.json" \
-    --batch_size 8 \
-    --max_new_tokens 768 \
-    --test_size $TEST_SIZE \
-    --seed $SEED
-echo ""
+# # Step 3: Run inference on Case 1
+# echo "Step 3/7: Running inference for Case 1..."
+# echo "=========================================="
+# echo "Test size: $TEST_SIZE samples"
+# python helpsteer3/inference.py \
+#     --model_path "$CASE1_MODEL" \
+#     --output_file "$OUTPUT_DIR/case1_predictions.json" \
+#     --batch_size 8 \
+#     --max_new_tokens 768 \
+#     --test_size $TEST_SIZE \
+#     --seed $SEED
+# echo ""
 
-# Step 4: Run inference on Case 2
-echo "Step 4/7: Running inference for Case 2..."
-echo "=========================================="
-echo "Test size: $TEST_SIZE samples"
-python helpsteer3/inference.py \
-    --model_path "$CASE2_MODEL" \
-    --output_file "$OUTPUT_DIR/case2_predictions.json" \
-    --batch_size 8 \
-    --max_new_tokens 768 \
-    --test_size $TEST_SIZE \
-    --seed $SEED
-echo ""
+# # Step 4: Run inference on Case 2
+# echo "Step 4/7: Running inference for Case 2..."
+# echo "=========================================="
+# echo "Test size: $TEST_SIZE samples"
+# python helpsteer3/inference.py \
+#     --model_path "$CASE2_MODEL" \
+#     --output_file "$OUTPUT_DIR/case2_predictions.json" \
+#     --batch_size 8 \
+#     --max_new_tokens 768 \
+#     --test_size $TEST_SIZE \
+#     --seed $SEED
+# echo ""
 
-# Download reward model if not already present
-echo "Ensuring reward model is available..."
-huggingface-cli download Jennny/llama3_help_rm
+# # Download reward model if not already present
+# echo "Ensuring reward model is available..."
+# huggingface-cli download Jennny/llama3_help_rm
 
 # Step 5: Evaluate Case 1
 echo "Step 5/7: Evaluating Case 1..."
