@@ -48,7 +48,18 @@ Monitor training in Weights & Biases:
 - Project: `helpsteer3_ppo_experiment`
 - Experiments: `helpsteer3_case1_question_only_baseline` vs `helpsteer3_case2_with_feedback_experimental`
 
-### Step 3: Evaluate and Compare
+### Step 3: Merge Checkpoints (Optional - Manual)
+
+If you want to merge a checkpoint manually for testing:
+
+```bash
+# Merge a specific checkpoint
+bash helpsteer3/merge_checkpoint.sh helpsteer3_case1_question_only_baseline 21
+
+# This converts FSDP checkpoint to HuggingFace format for inference
+```
+
+### Step 4: Evaluate and Compare
 
 ```bash
 # Edit the script to set the checkpoint steps you want to evaluate
@@ -57,7 +68,7 @@ bash helpsteer3/run_full_evaluation.sh
 ```
 
 This will:
-1. Merge checkpoints to HuggingFace format
+1. Merge checkpoints to HuggingFace format (using merge_checkpoint.sh)
 2. Run inference on test set (500 samples)
 3. Evaluate using reward model
 4. Compare results statistically
@@ -70,10 +81,13 @@ helpsteer3/
 ├── preprocess_ppo_helpsteer3_case2_with_feedback.py  # Data preprocessing for Case 2
 ├── run_ppo_case1_question_only.sh                     # Training script for Case 1
 ├── run_ppo_case2_with_feedback.sh                     # Training script for Case 2
+├── merge_checkpoint.sh                                 # Merge FSDP checkpoint to HF format
 ├── inference.py                                        # Generate predictions on test set
 ├── evaluate.py                                         # Evaluate predictions with RM
 ├── compare_results.py                                  # Statistical comparison
+├── analyze_dataset_lengths.py                          # Analyze dataset token lengths
 ├── run_full_evaluation.sh                              # Complete evaluation pipeline
+├── verify_setup.py                                     # Verify setup before training
 └── README.md                                           # This file
 ```
 

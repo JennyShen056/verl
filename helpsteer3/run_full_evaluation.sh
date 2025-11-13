@@ -25,8 +25,8 @@ echo ""
 # Configuration
 CASE1_NAME="helpsteer3_case1_question_only_baseline"
 CASE2_NAME="helpsteer3_case2_with_feedback_experimental"
-CASE1_GLOBAL_STEP=21  # Global step for Case 1
-CASE2_GLOBAL_STEP=41  # Global step for Case 2
+CASE1_GLOBAL_STEP=115  # Global step for Case 1
+CASE2_GLOBAL_STEP=201  # Global step for Case 2
 OUTPUT_DIR="helpsteer3/outputs"
 TEST_SIZE=500  # Number of test samples (same as preprocessing)
 SEED=42  # Same seed as preprocessing
@@ -42,27 +42,15 @@ echo ""
 mkdir -p "$OUTPUT_DIR"
 
 # Step 1: Merge Case 1 checkpoint
-echo "Step 1/5: Merging Case 1 checkpoint..."
+echo "Step 1/7: Merging Case 1 checkpoint..."
 echo "======================================="
-python3 -m verl.utils.fs copy \
-    "checkpoints/helpsteer3_ppo_experiment/${CASE1_NAME}/global_step_${CASE1_GLOBAL_STEP}/actor/default" \
-    "checkpoints/helpsteer3_ppo_experiment/${CASE1_NAME}/global_step_${CASE1_GLOBAL_STEP}/actor/huggingface"
-
-python3 -m verl.utils.model_merge \
-    --source "checkpoints/helpsteer3_ppo_experiment/${CASE1_NAME}/global_step_${CASE1_GLOBAL_STEP}/actor/default" \
-    --target "checkpoints/helpsteer3_ppo_experiment/${CASE1_NAME}/global_step_${CASE1_GLOBAL_STEP}/actor/huggingface"
+bash helpsteer3/merge_checkpoint.sh "$CASE1_NAME" "$CASE1_GLOBAL_STEP"
 echo ""
 
 # Step 2: Merge Case 2 checkpoint
-echo "Step 2/5: Merging Case 2 checkpoint..."
+echo "Step 2/7: Merging Case 2 checkpoint..."
 echo "======================================="
-python3 -m verl.utils.fs copy \
-    "checkpoints/helpsteer3_ppo_experiment/${CASE2_NAME}/global_step_${CASE2_GLOBAL_STEP}/actor/default" \
-    "checkpoints/helpsteer3_ppo_experiment/${CASE2_NAME}/global_step_${CASE2_GLOBAL_STEP}/actor/huggingface"
-
-python3 -m verl.utils.model_merge \
-    --source "checkpoints/helpsteer3_ppo_experiment/${CASE2_NAME}/global_step_${CASE2_GLOBAL_STEP}/actor/default" \
-    --target "checkpoints/helpsteer3_ppo_experiment/${CASE2_NAME}/global_step_${CASE2_GLOBAL_STEP}/actor/huggingface"
+bash helpsteer3/merge_checkpoint.sh "$CASE2_NAME" "$CASE2_GLOBAL_STEP"
 echo ""
 
 # Paths to merged models
@@ -70,7 +58,7 @@ CASE1_MODEL="checkpoints/helpsteer3_ppo_experiment/${CASE1_NAME}/global_step_${C
 CASE2_MODEL="checkpoints/helpsteer3_ppo_experiment/${CASE2_NAME}/global_step_${CASE2_GLOBAL_STEP}/actor/huggingface"
 
 # Step 3: Run inference on Case 1
-echo "Step 3/5: Running inference for Case 1..."
+echo "Step 3/7: Running inference for Case 1..."
 echo "=========================================="
 echo "Test size: $TEST_SIZE samples"
 python helpsteer3/inference.py \
@@ -83,7 +71,7 @@ python helpsteer3/inference.py \
 echo ""
 
 # Step 4: Run inference on Case 2
-echo "Step 4/5: Running inference for Case 2..."
+echo "Step 4/7: Running inference for Case 2..."
 echo "=========================================="
 echo "Test size: $TEST_SIZE samples"
 python helpsteer3/inference.py \
