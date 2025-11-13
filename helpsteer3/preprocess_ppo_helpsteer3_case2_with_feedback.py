@@ -11,12 +11,51 @@ from tqdm import tqdm
 from verl.utils.fs import copy, makedirs
 
 
-def load_helpsteer3_data(split: str = "train") -> List[Dict]:
-    """Load HelpSteer3 feedback subset from HuggingFace"""
-    print(f"Loading HelpSteer3 'feedback' subset, split: {split}")
-    dataset = load_dataset("nvidia/HelpSteer3", "feedback", split=split)
-    print(f"Loaded {len(dataset)} examples")
-    return list(dataset)
+def load_helpsteer3_data(split: str = "train", test_size: int = 500, seed: int = 42) -> List[Dict]:
+    """
+    Load HelpSteer3 feedback subset from HuggingFace
+    
+    Args:
+        split: 'train', 'validation', or 'test'
+        test_size: Number of samples to reserve for test from validation
+        seed: Random seed for reproducible train/val/test split
+    
+    Returns:
+        List of examples for the requested split
+    """
+    if split == "test":
+        # Load validation and extract test samples
+        print(f"Loading HelpSteer3 'feedback' subset, extracting test from validation")
+        dataset = load_dataset("nvidia/HelpSteer3", "feedback", split="validation")
+        all_data = list(dataset)
+        
+        # Use seed to get consistent test indices
+        random.seed(seed)
+        test_indices = set(random.sample(range(len(all_data)), test_size))
+        test_data = [all_data[i] for i in sorted(test_indices)]
+        
+        print(f"Loaded {len(test_data)} test examples (split from validation)")
+        return test_data
+    
+    elif split == "validation":
+        # Load validation and exclude test samples
+        print(f"Loading HelpSteer3 'feedback' subset, validation (excluding test)")
+        dataset = load_dataset("nvidia/HelpSteer3", "feedback", split="validation")
+        all_data = list(dataset)
+        
+        # Use seed to get consistent test indices to exclude
+        random.seed(seed)
+        test_indices = set(random.sample(range(len(all_data)), test_size))
+        validation_data = [all_data[i] for i in range(len(all_data)) if i not in test_indices]
+        
+        print(f"Loaded {len(validation_data)} validation examples (originally {len(all_data)}, reserved {test_size} for test)")
+        return validation_data
+    
+    else:  # train
+        print(f"Loading HelpSteer3 'feedback' subset, split: {split}")
+        dataset = load_dataset("nvidia/HelpSteer3", "feedback", split=split)
+        print(f"Loaded {len(dataset)} examples")
+        return list(dataset)
 
 
 def format_conversation(context: List[Dict]) -> str:
@@ -88,7 +127,7 @@ def make_map_fn(split: str, data_source: str = "helpsteer3_feedback", seed: int 
             f"Conversation:\n{formatted_context}\n\n"
             f"Previous Response: {chosen_response}\n\n"
             f"Feedback: {formatted_feedback}\n\n"
-            f"Now, please respond to the same conversation:\n\n"
+            f"Now, please respond to the same conversation directly:\n\n"
             f"Conversation:\n{formatted_context}"
         )
         
@@ -133,14 +172,15 @@ def preprocess_dataset(
     split: str,
     output_file: str,
     seed: int = 42,
+    test_size: int = 500,
 ) -> None:
     """Preprocess HelpSteer3 feedback data for Case 2 (With Feedback)"""
     
     # Set seed for reproducibility
     random.seed(seed)
     
-    # Load data
-    raw_data = load_helpsteer3_data(split)
+    # Load data (with test split handling)
+    raw_data = load_helpsteer3_data(split, test_size=test_size, seed=seed)
     
     # Process each example
     processed_data = []
@@ -212,6 +252,12 @@ def main():
         default=42,
         help="Random seed for reproducibility",
     )
+    parser.add_argument(
+        "--test_size",
+        type=int,
+        default=500,
+        help="Number of samples to reserve for test from validation split",
+    )
     
     args = parser.parse_args()
     
@@ -233,6 +279,7 @@ def main():
                 split=split_name,
                 output_file=output_file,
                 seed=args.seed,
+                test_size=args.test_size,
             )
             
             # Copy to HDFS if specified
@@ -251,6 +298,8 @@ def main():
     print(f"\nProcessed files saved to: {local_save_dir}")
     print(f"\nTo use in PPO training:")
     print(f"  data.train_files={os.path.join(local_save_dir, 'train.parquet')}")
+    print(f"  data.val_files={os.path.join(local_save_dir, 'validation.parquet')}")
+    print(f"  data.test_files={os.path.join(local_save_dir, 'test.parquet')}")
     print(f"  reward_model.enable=True")
     print(f"  reward_model.model.path=./helpsteer3_reward_model/final_model")
 

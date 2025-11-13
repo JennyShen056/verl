@@ -50,7 +50,7 @@ def create_case2_prompt(context: List[Dict], chosen_response: str, chosen_feedba
         f"Conversation:\n{formatted_context}\n\n"
         f"Previous Response: {chosen_response}\n\n"
         f"Feedback: {formatted_feedback}\n\n"
-        f"Now, please respond to the same conversation:\n\n"
+        f"Now, please respond to the same conversation directly:\n\n"
         f"Conversation:\n{formatted_context}"
     )
     
