@@ -176,6 +176,11 @@ Look for:
 - If you see errors, check that the model is properly downloaded
 - Ensure you have enough GPU memory for evaluation
 
+### Tokenizer Pad Token Error
+- **Fixed**: The evaluation script now automatically sets `pad_token = eos_token` for the reward model tokenizer
+- This is required for batched inference with the pipeline
+- The warning about `return_all_scores` being deprecated is expected and handled (uses `top_k=None` instead)
+
 ## Citation
 
 If you use this pipeline, please cite:

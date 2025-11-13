@@ -43,6 +43,12 @@ def evaluate_with_reward_model(
     # Load tokenizer and pipeline
     rm_tokenizer = AutoTokenizer.from_pretrained(reward_model_path)
     
+    # Set pad_token if not already set (required for batching)
+    if rm_tokenizer.pad_token is None:
+        rm_tokenizer.pad_token = rm_tokenizer.eos_token
+        rm_tokenizer.pad_token_id = rm_tokenizer.eos_token_id
+        print(f"Set pad_token to eos_token for batching")
+    
     rm_pipe = pipeline(
         "sentiment-analysis",
         model=reward_model_path,
@@ -52,7 +58,7 @@ def evaluate_with_reward_model(
     )
     
     pipe_kwargs = {
-        "return_all_scores": True,
+        "top_k": None,  # Use top_k instead of deprecated return_all_scores
         "function_to_apply": "none",
         "batch_size": batch_size
     }
