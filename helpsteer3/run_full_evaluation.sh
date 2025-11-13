@@ -28,7 +28,8 @@ CASE2_NAME="helpsteer3_case2_with_feedback_experimental"
 CASE1_GLOBAL_STEP=115  # Global step for Case 1
 CASE2_GLOBAL_STEP=201  # Global step for Case 2
 OUTPUT_DIR="helpsteer3/outputs"
-TEST_SIZE=500  # Number of test samples (same as preprocessing)
+# TEST_SIZE=500  # Number of test samples (same as preprocessing)
+TEST_SIZE=100  # Number of test samples (same as preprocessing)
 SEED=42  # Same seed as preprocessing
 
 echo "Configuration:"
