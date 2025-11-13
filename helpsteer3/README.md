@@ -47,6 +47,7 @@ bash helpsteer3/run_ppo_case2_with_feedback.sh
 Monitor training in Weights & Biases:
 - Project: `helpsteer3_ppo_experiment`
 - Experiments: `helpsteer3_case1_question_only_baseline` vs `helpsteer3_case2_with_feedback_experimental`
+- **NEW**: Validation metrics now logged every 2 steps! See `VALIDATION_SETUP.md` for details
 
 ### Step 3: Merge Checkpoints (Optional - Manual)
 
@@ -81,6 +82,7 @@ helpsteer3/
 ├── preprocess_ppo_helpsteer3_case2_with_feedback.py  # Data preprocessing for Case 2
 ├── run_ppo_case1_question_only.sh                     # Training script for Case 1
 ├── run_ppo_case2_with_feedback.sh                     # Training script for Case 2
+├── validation_reward_fn.py                             # Custom validation reward function
 ├── merge_checkpoint.sh                                 # Merge FSDP checkpoint to HF format
 ├── inference.py                                        # Generate predictions on test set
 ├── evaluate.py                                         # Evaluate predictions with RM
@@ -88,7 +90,9 @@ helpsteer3/
 ├── analyze_dataset_lengths.py                          # Analyze dataset token lengths
 ├── run_full_evaluation.sh                              # Complete evaluation pipeline
 ├── verify_setup.py                                     # Verify setup before training
-└── README.md                                           # This file
+├── README.md                                           # This file
+├── VALIDATION_SETUP.md                                 # Validation setup guide
+└── VALIDATION_WITH_REWARD_MODEL.md                     # Validation background info
 ```
 
 ## Reward Model
@@ -134,11 +138,12 @@ reward = pipe_outputs[0][0]["score"]
 - **Input**: Conversation + Previous Response + Feedback
 
 ### Common Settings
-- **Max response length**: 768 tokens
+- **Max response length**: 1024 tokens (increased from 768 to prevent truncation)
 - **Learning rate (actor)**: 1e-6
 - **Learning rate (critic)**: 1e-5
 - **GPUs**: 8 GPUs per node
 - **Model**: meta-llama/Llama-3.1-8B-Instruct
+- **Validation**: Enabled with custom reward function (every 2 steps)
 
 ## Evaluation Metrics
 

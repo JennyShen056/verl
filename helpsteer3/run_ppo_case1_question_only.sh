@@ -32,9 +32,10 @@ python3 -m verl.trainer.main_ppo \
     data.val_files="$VALID_DATA" \
     data.train_batch_size=256 \
     data.max_prompt_length=1024 \
-    data.max_response_length=768 \
+    data.max_response_length=1024 \
     data.filter_overlong_prompts=True \
     data.truncation='error' \
+    data.return_raw_chat=True \
     actor_rollout_ref.model.path="$POLICY_MODEL" \
     actor_rollout_ref.actor.optim.lr=1e-6 \
     actor_rollout_ref.model.use_remove_padding=True \
@@ -61,6 +62,8 @@ python3 -m verl.trainer.main_ppo \
     reward_model.model.use_remove_padding=True \
     reward_model.model.fsdp_config.param_offload=True \
     reward_model.micro_batch_size_per_gpu=16 \
+    custom_reward_function.path="helpsteer3/validation_reward_fn.py" \
+    custom_reward_function.name="compute_score" \
     algorithm.use_kl_in_reward=False \
     trainer.critic_warmup=0 \
     trainer.logger='["console","wandb"]' \
