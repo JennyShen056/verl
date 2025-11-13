@@ -27,7 +27,7 @@ def paired_t_test(rewards1: List[float], rewards2: List[float]) -> Dict:
     return {
         "t_statistic": float(t_stat),
         "p_value": float(p_value),
-        "significant": p_value < 0.05,
+        "significant": bool(p_value < 0.05),  # Convert to native Python bool
         "significance_level": "p < 0.05" if p_value < 0.05 else "not significant"
     }
 
@@ -39,7 +39,7 @@ def wilcoxon_test(rewards1: List[float], rewards2: List[float]) -> Dict:
     return {
         "statistic": float(stat),
         "p_value": float(p_value),
-        "significant": p_value < 0.05,
+        "significant": bool(p_value < 0.05),  # Convert to native Python bool
         "significance_level": "p < 0.05" if p_value < 0.05 else "not significant"
     }
 
