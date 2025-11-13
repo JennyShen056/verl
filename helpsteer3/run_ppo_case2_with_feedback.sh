@@ -67,9 +67,11 @@ python3 -m verl.trainer.main_ppo \
     trainer.experiment_name='helpsteer3_case2_with_feedback_experimental' \
     trainer.n_gpus_per_node=8 \
     trainer.nnodes=1 \
-    trainer.val_before_train=False \
+    trainer.val_before_train=True \
     trainer.save_freq=5 \
     trainer.test_freq=2 \
+    trainer.default_hdfs_dir=null \
+    trainer.default_local_dir=./checkpoints \
     trainer.total_epochs=1 $@
 
 echo ""
